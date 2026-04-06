@@ -1358,8 +1358,8 @@
         </div>
 
         <div class="mod-field">
-          <div class="mod-label">Quote 1 <span class="req">REQUIRED</span></div>
-          <input class="mod-input" id="mod-q1" type="text" placeholder="Their most iconic line" autocorrect="off">
+          <div class="mod-label">Quote 1 <span class="opt">optional</span></div>
+          <input class="mod-input" id="mod-q1" type="text" placeholder="Their most iconic line (leave blank if unknown/mute)" autocorrect="off">
         </div>
 
         <div class="mod-field">
@@ -2787,7 +2787,7 @@
 
     // Validate
     let valid = true;
-    [['mod-name', name], ['mod-image', image], ['mod-q1', q1]].forEach(([id, val]) => {
+    [['mod-name', name], ['mod-image', image]].forEach(([id, val]) => {
       const el = document.getElementById(id);
       if (!val) { el.classList.add('error'); valid = false; }
       else el.classList.remove('error');
@@ -2839,7 +2839,7 @@
   });
 
   // Remove error highlight on input
-  ['mod-name','mod-image','mod-q1'].forEach(id => {
+  ['mod-name','mod-image'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => document.getElementById(id).classList.remove('error'));
   });
 
