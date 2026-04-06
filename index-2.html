@@ -1005,6 +1005,68 @@
     }
     .edit-code-out.show { display: block; }
 
+    /* ── Sync tab ────────────────────────────────── */
+    .sync-status-bar {
+      width: 100%; padding: 10px 14px; border-radius: 10px;
+      font-size: 0.82rem; font-weight: 600; text-align: center;
+      animation: popIn 0.2s ease;
+    }
+    .sync-status-bar.ok    { background: rgba(44,182,125,0.12); color: var(--correct); border: 1px solid rgba(44,182,125,0.3); }
+    .sync-status-bar.err   { background: rgba(242,95,76,0.1);  color: var(--wrong);   border: 1px solid rgba(242,95,76,0.3); }
+    .sync-status-bar.busy  { background: rgba(255,137,6,0.08); color: var(--accent);  border: 1px solid rgba(255,137,6,0.25); }
+
+    .sync-setup-box { width: 100%; display: flex; flex-direction: column; gap: 14px; }
+    .sync-setup-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;
+      letter-spacing: 0.07em; color: var(--text);
+    }
+    .sync-setup-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    .sync-steps { display: flex; flex-direction: column; gap: 10px; }
+    .sync-step {
+      display: flex; gap: 12px; align-items: flex-start;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px;
+    }
+    .sync-step-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: rgba(255,137,6,0.15); color: var(--accent);
+      font-size: 0.78rem; font-weight: 700; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+    }
+    .sync-step-body { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+    .sync-step-body strong { color: var(--text); }
+    .sync-step-body code {
+      background: var(--surface2); padding: 1px 6px; border-radius: 4px;
+      font-size: 0.78rem; color: var(--accent); font-family: 'Courier New', monospace;
+    }
+    .sync-link { color: var(--accent); text-decoration: none; font-weight: 600; }
+    .sync-link:hover { text-decoration: underline; }
+
+    .sync-connect-err { font-size: 0.8rem; color: var(--wrong); min-height: 1.2em; }
+
+    .sync-connected-header {
+      width: 100%; display: flex; align-items: center; gap: 12px;
+      background: rgba(44,182,125,0.08); border: 1.5px solid rgba(44,182,125,0.25);
+      border-radius: 12px; padding: 14px;
+    }
+    .sync-conn-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .sync-conn-title { font-weight: 700; font-size: 0.95rem; color: var(--correct); }
+    .sync-conn-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .sync-disconnect-btn {
+      margin-left: auto; padding: 6px 12px; background: transparent;
+      border: 1.5px solid rgba(242,95,76,0.3); border-radius: 8px;
+      color: var(--wrong); font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem; font-weight: 600; cursor: pointer; white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .sync-disconnect-btn:hover { background: rgba(242,95,76,0.1); }
+    .sync-info-row {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      font-size: 0.82rem; color: var(--muted); font-weight: 600;
+    }
+    .sync-info-row span { flex: 1; min-width: 140px; }
+
   </style>
 </head>
 <body>
@@ -1244,10 +1306,21 @@
       <button class="mod-tab-btn active" data-modtab="add">➕ Add</button>
       <button class="mod-tab-btn" data-modtab="edit">✏️ Edit</button>
       <button class="mod-tab-btn" data-modtab="convert">🔗 URLs</button>
+      <button class="mod-tab-btn" data-modtab="sync">☁️ Sync</button>
     </div>
 
     <!-- ── ADD CHARACTER TAB ── -->
     <div class="mod-tab-panel active" id="modtab-add">
+
+      <!-- Saved-chars banner -->
+      <div id="saved-chars-banner" style="display:none; width:100%; background:rgba(44,182,125,0.08); border:1.5px solid rgba(44,182,125,0.25); border-radius:12px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+        <div style="font-size:0.82rem; color:var(--correct); font-weight:600;">
+          💾 <span id="saved-chars-count">0</span> character(s) saved — will reload on next visit
+        </div>
+        <button id="clear-saved-btn" style="padding:5px 12px; background:rgba(242,95,76,0.1); border:1.5px solid rgba(242,95,76,0.3); border-radius:8px; color:var(--wrong); font-family:'Outfit',sans-serif; font-size:0.75rem; font-weight:600; cursor:pointer; white-space:nowrap;">
+          🗑 Clear all saved
+        </button>
+      </div>
 
       <!-- No-quote indicator -->
       <div class="no-quote-section" id="no-quote-section" style="display:none">
@@ -1391,6 +1464,88 @@
       </div>
     </div>
 
+    <!-- ── SYNC TAB ── -->
+    <div class="mod-tab-panel" id="modtab-sync">
+
+      <div class="sync-status-bar" id="sync-status-bar" style="display:none"></div>
+
+      <div class="sync-setup-box" id="sync-setup-box">
+        <div class="sync-setup-title">☁️ GitHub Gist Sync</div>
+        <div class="sync-setup-desc">
+          Stores your characters in a GitHub Gist so they persist across devices and browsers.
+          <strong>One-time setup — takes ~2 minutes.</strong>
+        </div>
+
+        <div class="sync-steps">
+          <div class="sync-step">
+            <div class="sync-step-num">1</div>
+            <div class="sync-step-body">
+              Create a <strong>GitHub Personal Access Token</strong> with <code>gist</code> scope.<br>
+              <a class="sync-link" href="https://github.com/settings/tokens/new?scopes=gist&description=WhosDat+Sync" target="_blank" rel="noopener">Open token page ↗</a>
+              <span style="font-size:0.75rem;color:var(--muted)"> (check "Gist", set any expiry, click Generate)</span>
+            </div>
+          </div>
+          <div class="sync-step">
+            <div class="sync-step-num">2</div>
+            <div class="sync-step-body">
+              Create a <strong>new Gist</strong> with a file called <code>characters.json</code> containing <code>[]</code>.<br>
+              <a class="sync-link" href="https://gist.github.com" target="_blank" rel="noopener">Open Gist page ↗</a>
+              <span style="font-size:0.75rem;color:var(--muted)"> (can be secret)</span>
+            </div>
+          </div>
+          <div class="sync-step">
+            <div class="sync-step-num">3</div>
+            <div class="sync-step-body">Paste both below and tap Connect.</div>
+          </div>
+        </div>
+
+        <div class="mod-field">
+          <div class="mod-label">GitHub Token <span class="req">REQUIRED</span></div>
+          <input class="mod-input" id="sync-token" type="password"
+            placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+            autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+
+        <div class="mod-field">
+          <div class="mod-label">Gist ID <span class="req">REQUIRED</span></div>
+          <input class="mod-input" id="sync-gist-id" type="text"
+            placeholder="e.g. a1b2c3d4e5f6..." style="font-family:monospace;font-size:0.85rem"
+            autocomplete="off" autocorrect="off" spellcheck="false">
+          <div style="font-size:0.72rem;color:var(--muted);margin-top:4px">
+            The long ID from the Gist URL: gist.github.com/username/<strong>THIS_PART</strong>
+          </div>
+        </div>
+
+        <button class="mod-add-btn" id="sync-connect-btn" style="margin-top:4px">🔗 Connect &amp; Load</button>
+        <div class="sync-connect-err" id="sync-connect-err"></div>
+      </div>
+
+      <!-- Connected view -->
+      <div id="sync-connected-box" style="display:none; flex-direction:column; gap:14px; width:100%">
+        <div class="sync-connected-header">
+          <div class="sync-conn-icon">✅</div>
+          <div>
+            <div class="sync-conn-title">Connected to Gist</div>
+            <div class="sync-conn-sub" id="sync-conn-sub">—</div>
+          </div>
+          <button class="sync-disconnect-btn" id="sync-disconnect-btn">Disconnect</button>
+        </div>
+
+        <div class="sync-info-row" id="sync-info-row">
+          <span id="sync-char-count-label">— characters in Gist</span>
+          <button class="mod-gen-btn" id="sync-pull-btn" style="padding:9px 14px;font-size:0.8rem;width:auto">⬇ Pull from Gist</button>
+          <button class="mod-gen-btn" id="sync-push-btn" style="padding:9px 14px;font-size:0.8rem;width:auto;border-color:var(--accent);color:var(--accent)">⬆ Push all to Gist</button>
+        </div>
+
+        <div style="font-size:0.78rem;color:var(--muted);line-height:1.6; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 14px;">
+          <strong style="color:var(--text)">Auto-sync is ON.</strong> Every character you add, edit, or delete is pushed to the Gist automatically.<br>
+          Use <strong>Pull</strong> if you edited the Gist manually. Use <strong>Push all</strong> to overwrite the Gist with the current session.
+        </div>
+
+        <a class="sync-link" id="sync-gist-link" href="#" target="_blank" rel="noopener" style="font-size:0.8rem;">View Gist on GitHub ↗</a>
+      </div>
+    </div>
+
     </div> <!-- /mod-content -->
   </div>
 
@@ -1411,6 +1566,34 @@
     // },
 
   ];
+
+  // ═══════════════════════════════════════════════════
+  //  PERSISTED CHARACTERS  (saved via Mod Panel on mobile)
+  //  Merged on top of the hard-coded array above.
+  // ═══════════════════════════════════════════════════
+  (function loadPersistedChars() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('whosdat-saved-chars') || '[]');
+      saved.forEach(c => {
+        if (c && c.name && c.image && !CHARACTERS.find(x => x.name === c.name)) {
+          CHARACTERS.push(c);
+        }
+      });
+    } catch(e) {}
+  })();
+
+  window.CHARACTERS = CHARACTERS;
+
+  // Helper: write persisted chars back to localStorage
+  function _savedCharNames() {
+    try { return JSON.parse(localStorage.getItem('whosdat-saved-chars') || '[]').map(c=>c.name); } catch(e){ return []; }
+  }
+  function savePersistedChars(arr) {
+    try { localStorage.setItem('whosdat-saved-chars', JSON.stringify(arr)); } catch(e) {}
+  }
+  function getPersistedChars() {
+    try { return JSON.parse(localStorage.getItem('whosdat-saved-chars') || '[]'); } catch(e){ return []; }
+  }
 
   // ═══════════════════════════════════════════════════
   //  DRAWER + NAVIGATION
@@ -2573,6 +2756,26 @@
   setupCopyBtn('mod-copy-btn', () => document.getElementById('mod-code-block').textContent);
   setupCopyBtn('url-copy-btn', () => document.getElementById('url-code-block').textContent);
 
+  // ── Saved-chars badge ────────────────────────────
+  function updateSavedBadge() {
+    const saved = getPersistedChars();
+    const banner = document.getElementById('saved-chars-banner');
+    const count  = document.getElementById('saved-chars-count');
+    if (!banner) return;
+    if (saved.length) {
+      banner.style.display = 'flex';
+      count.textContent = saved.length;
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  document.getElementById('clear-saved-btn').addEventListener('click', () => {
+    if (!confirm('Remove all ' + getPersistedChars().length + ' saved character(s) from storage? They will still be in this session but gone on next reload.')) return;
+    savePersistedChars([]);
+    updateSavedBadge();
+  });
+
   // ── Add Character ────────────────────────────────
   document.getElementById('mod-add-btn').addEventListener('click', () => {
     const name   = document.getElementById('mod-name').value.trim();
@@ -2607,6 +2810,15 @@
     if (!sessionChars.find(c => c.name === name)) {
       sessionChars.push(char);
     }
+
+    // ── Persist to localStorage so it survives page reload ──
+    const persisted = getPersistedChars();
+    if (!persisted.find(c => c.name === name)) {
+      persisted.push(char);
+      savePersistedChars(persisted);
+    }
+    updateSavedBadge();
+    syncAutoSync();
 
     // Show code
     const code = charToCode(char);
@@ -2655,9 +2867,13 @@
       rmBtn.addEventListener('click', () => {
         sessionChars = sessionChars.filter(x => x.name !== c.name);
         window.CHARACTERS = (window.CHARACTERS || []).filter(x => x.name !== c.name);
+        // Remove from localStorage too
+        savePersistedChars(getPersistedChars().filter(x => x.name !== c.name));
+        updateSavedBadge();
         buildSeriesFilter();
         updateModCharCount();
         renderSessionList();
+        syncAutoSync();
       });
       item.appendChild(img); item.appendChild(info); item.appendChild(rmBtn);
       list.appendChild(item);
@@ -2910,6 +3126,10 @@
       if (newQ3)     updated.quote3 = newQ3;
       window.CHARACTERS[idx] = updated;
       editingChar = updated;
+      // Sync localStorage: update the entry if it was persisted
+      const persisted = getPersistedChars();
+      const pi = persisted.findIndex(c => c.name === editingChar.name || c.name === newName);
+      if (pi !== -1) { persisted[pi] = updated; savePersistedChars(persisted); updateSavedBadge(); }
       buildSeriesFilter();
       updateModCharCount();
       renderNoQuote();
@@ -2918,6 +3138,7 @@
       document.getElementById('edit-code-wrap').classList.add('show');
       renderEditList(document.getElementById('edit-search').value);
       document.getElementById('edit-form-title').textContent = 'Editing: ' + newName;
+      syncAutoSync();
     }
   });
 
@@ -2925,11 +3146,15 @@
     if (!editingChar) return;
     if (!confirm('Remove "' + editingChar.name + '" from the session? This only affects the live session — update characters.js to make it permanent.')) return;
     window.CHARACTERS = (window.CHARACTERS || []).filter(c => c.name !== editingChar.name);
+    // Remove from localStorage too
+    savePersistedChars(getPersistedChars().filter(c => c.name !== editingChar.name));
+    updateSavedBadge();
     buildSeriesFilter();
     updateModCharCount();
     renderNoQuote();
     renderEditList(document.getElementById('edit-search').value);
     closeEditForm();
+    syncAutoSync();
   });
 
   document.getElementById('edit-search').addEventListener('input', e => {
@@ -2947,6 +3172,11 @@
   function initModPanel() {
     if (!modReady) {
       modReady = true;
+      // Re-populate sessionChars from any persisted chars so they appear in the session list
+      const persisted = getPersistedChars();
+      persisted.forEach(c => {
+        if (!sessionChars.find(x => x.name === c.name)) sessionChars.push(c);
+      });
       (window.CHARACTERS || []).filter(c => needsConvert(c.image)).forEach(c => {
         if (!urlItemPaths[c.name]) urlItemPaths[c.name] = 'images/' + nameToFilename(c.name);
       });
@@ -2958,7 +3188,225 @@
       renderSessionList();
       renderNoQuote();
       renderEditList();
+      updateSavedBadge();
     }
+  }
+
+  // ═══════════════════════════════════════════════════
+  //  GIST SYNC
+  // ═══════════════════════════════════════════════════
+  const SYNC_TOKEN_KEY   = 'whosdat-sync-token';
+  const SYNC_GIST_KEY    = 'whosdat-sync-gist';
+  const SYNC_FILENAME    = 'characters.json';
+
+  let syncToken  = '';
+  let syncGistId = '';
+  let syncBusy   = false;
+
+  function syncLoad() {
+    try {
+      syncToken  = localStorage.getItem(SYNC_TOKEN_KEY)  || '';
+      syncGistId = localStorage.getItem(SYNC_GIST_KEY)   || '';
+    } catch(e) {}
+  }
+
+  function syncSave() {
+    try {
+      localStorage.setItem(SYNC_TOKEN_KEY,  syncToken);
+      localStorage.setItem(SYNC_GIST_KEY,   syncGistId);
+    } catch(e) {}
+  }
+
+  function syncClear() {
+    try {
+      localStorage.removeItem(SYNC_TOKEN_KEY);
+      localStorage.removeItem(SYNC_GIST_KEY);
+    } catch(e) {}
+    syncToken = ''; syncGistId = '';
+  }
+
+  function showSyncStatus(msg, type, duration) {
+    const bar = document.getElementById('sync-status-bar');
+    bar.textContent = msg;
+    bar.className = 'sync-status-bar ' + (type||'ok');
+    bar.style.display = '';
+    if (duration !== 0) {
+      setTimeout(() => { bar.style.display = 'none'; }, duration || 3500);
+    }
+  }
+
+  function setSyncConnectedUI(connected) {
+    document.getElementById('sync-setup-box').style.display      = connected ? 'none'  : 'flex';
+    document.getElementById('sync-connected-box').style.display  = connected ? 'flex'  : 'none';
+    if (connected) {
+      const sub = document.getElementById('sync-conn-sub');
+      sub.textContent = 'Gist: ' + syncGistId.slice(0, 16) + '…';
+      document.getElementById('sync-gist-link').href = 'https://gist.github.com/' + syncGistId;
+      updateSyncCharCount();
+    }
+  }
+
+  function updateSyncCharCount() {
+    const n = (window.CHARACTERS || []).length;
+    const el = document.getElementById('sync-char-count-label');
+    if (el) el.textContent = n + ' character' + (n !== 1 ? 's' : '') + ' in session';
+  }
+
+  async function gistFetch() {
+    const r = await fetch('https://api.github.com/gists/' + syncGistId, {
+      headers: {
+        'Authorization': 'Bearer ' + syncToken,
+        'Accept': 'application/vnd.github+json'
+      }
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status + (r.status === 401 ? ' — check your token' : r.status === 404 ? ' — Gist not found' : ''));
+    const data = await r.json();
+    const file = data.files && (data.files[SYNC_FILENAME] || Object.values(data.files)[0]);
+    if (!file) throw new Error('No ' + SYNC_FILENAME + ' file found in Gist');
+    let chars;
+    try { chars = JSON.parse(file.content); } catch(e) { throw new Error('Gist content is not valid JSON'); }
+    if (!Array.isArray(chars)) throw new Error('Gist JSON is not an array');
+    return chars;
+  }
+
+  async function gistPush(chars) {
+    const body = { files: {} };
+    body.files[SYNC_FILENAME] = { content: JSON.stringify(chars, null, 2) };
+    const r = await fetch('https://api.github.com/gists/' + syncGistId, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': 'Bearer ' + syncToken,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) throw new Error('Push failed: HTTP ' + r.status);
+  }
+
+  // Called after any add/edit/delete to auto-push
+  async function syncAutoSync() {
+    if (!syncToken || !syncGistId || syncBusy) return;
+    syncBusy = true;
+    showSyncStatus('☁️ Syncing…', 'busy', 0);
+    try {
+      await gistPush(window.CHARACTERS || []);
+      showSyncStatus('✅ Synced to Gist', 'ok');
+      updateSyncCharCount();
+    } catch(e) {
+      showSyncStatus('⚠️ Sync failed: ' + e.message, 'err', 5000);
+    }
+    syncBusy = false;
+  }
+
+  // Connect button
+  document.getElementById('sync-connect-btn').addEventListener('click', async () => {
+    const token  = document.getElementById('sync-token').value.trim();
+    const gistId = document.getElementById('sync-gist-id').value.trim();
+    const errEl  = document.getElementById('sync-connect-err');
+    errEl.textContent = '';
+    if (!token || !gistId) { errEl.textContent = 'Both fields are required.'; return; }
+
+    syncToken = token; syncGistId = gistId;
+    document.getElementById('sync-connect-btn').textContent = '⏳ Connecting…';
+    document.getElementById('sync-connect-btn').disabled = true;
+
+    try {
+      const chars = await gistFetch();
+      // Merge Gist chars into session
+      let added = 0;
+      chars.forEach(c => {
+        if (c && c.name && c.image && !(window.CHARACTERS||[]).find(x => x.name === c.name)) {
+          (window.CHARACTERS || []).push(c);
+          added++;
+        }
+      });
+      if (added) { buildSeriesFilter(); updateModCharCount(); renderEditList(); renderNoQuote(); }
+      syncSave();
+      setSyncConnectedUI(true);
+      showSyncStatus('✅ Connected! Loaded ' + chars.length + ' character(s) from Gist.', 'ok');
+    } catch(e) {
+      errEl.textContent = '❌ ' + e.message;
+      syncToken = ''; syncGistId = '';
+    }
+    document.getElementById('sync-connect-btn').textContent = '🔗 Connect & Load';
+    document.getElementById('sync-connect-btn').disabled = false;
+  });
+
+  // Disconnect
+  document.getElementById('sync-disconnect-btn').addEventListener('click', () => {
+    if (!confirm('Disconnect from Gist? Your locally added characters will stay in this session but won\'t auto-sync anymore.')) return;
+    syncClear();
+    setSyncConnectedUI(false);
+    document.getElementById('sync-token').value  = '';
+    document.getElementById('sync-gist-id').value = '';
+    showSyncStatus('Disconnected from Gist.', 'err', 3000);
+  });
+
+  // Pull
+  document.getElementById('sync-pull-btn').addEventListener('click', async () => {
+    if (syncBusy) return;
+    syncBusy = true;
+    showSyncStatus('⬇ Pulling from Gist…', 'busy', 0);
+    try {
+      const chars = await gistFetch();
+      window.CHARACTERS = chars;
+      buildSeriesFilter(); updateModCharCount(); renderEditList(); renderNoQuote();
+      updateSyncCharCount();
+      showSyncStatus('✅ Pulled ' + chars.length + ' character(s) from Gist.', 'ok');
+    } catch(e) {
+      showSyncStatus('❌ Pull failed: ' + e.message, 'err', 5000);
+    }
+    syncBusy = false;
+  });
+
+  // Push all
+  document.getElementById('sync-push-btn').addEventListener('click', async () => {
+    const n = (window.CHARACTERS || []).length;
+    if (!confirm('Push all ' + n + ' character(s) to the Gist? This will overwrite the Gist content.')) return;
+    if (syncBusy) return;
+    syncBusy = true;
+    showSyncStatus('⬆ Pushing to Gist…', 'busy', 0);
+    try {
+      await gistPush(window.CHARACTERS || []);
+      showSyncStatus('✅ Pushed ' + n + ' character(s) to Gist.', 'ok');
+      updateSyncCharCount();
+    } catch(e) {
+      showSyncStatus('❌ Push failed: ' + e.message, 'err', 5000);
+    }
+    syncBusy = false;
+  });
+
+  // Add sync tab to sub-tab switcher
+  document.querySelectorAll('.mod-tab-btn').forEach(btn => {
+    if (btn.dataset.modtab === 'sync') {
+      btn.addEventListener('click', () => {
+        setSyncConnectedUI(!!(syncToken && syncGistId));
+        updateSyncCharCount();
+        // Pre-fill if creds exist
+        if (syncToken)  document.getElementById('sync-token').value   = syncToken;
+        if (syncGistId) document.getElementById('sync-gist-id').value = syncGistId;
+      });
+    }
+  });
+
+  // Auto-load Gist on page start if creds saved
+  syncLoad();
+  if (syncToken && syncGistId) {
+    gistFetch().then(chars => {
+      let added = 0;
+      chars.forEach(c => {
+        if (c && c.name && c.image && !(window.CHARACTERS||[]).find(x => x.name === c.name)) {
+          (window.CHARACTERS||[]).push(c);
+          added++;
+        }
+      });
+      if (added) {
+        buildSeriesFilter();
+        const activeId = document.querySelector('.section.active')?.id;
+        if (activeId === 'game-section') { resetPool(); loadNext(); }
+      }
+    }).catch(() => {}); // silently fail if offline
   }
 
   initGame();
