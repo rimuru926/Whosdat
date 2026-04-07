@@ -1358,7 +1358,7 @@
   </style>
 </head>
 <body>
-
+  <div id="debug-status" style="position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.8);color:#0f0;font-family:monospace;font-size:10px;padding:2px 10px;z-index:9999;pointer-events:none;display:none;">PixelWho Debug: Ready</div>
   <div class="drawer-overlay" id="drawer-overlay"></div>
 
   <div class="drawer" id="drawer">
@@ -3846,6 +3846,15 @@
   let syncGistId = '';
   let syncBusy   = false;
 
+  function updateDebug(msg) {
+    const el = document.getElementById('debug-status');
+    if (el) {
+      el.style.display = 'block';
+      el.textContent = 'PixelWho Debug: ' + msg;
+      console.log('DEBUG:', msg);
+    }
+  }
+
   function syncLoad() {
     try {
       syncToken  = localStorage.getItem(SYNC_TOKEN_KEY)  || '';
@@ -3900,47 +3909,39 @@
   let lastGistUpdate = '';
 
   async function gistFetch() {
+    updateDebug("Fetching Gist: " + syncGistId);
     const r = await fetch('https://api.github.com/gists/' + syncGistId, {
       headers: {
         'Authorization': 'Bearer ' + syncToken,
         'Accept': 'application/vnd.github+json'
       }
     });
-    if (!r.ok) throw new Error('HTTP ' + r.status + (r.status === 401 ? ' — check your token' : r.status === 404 ? ' — Gist not found' : ''));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     
-    lastGistEtag = r.headers.get('ETag');
     const data = await r.json();
-    lastGistUpdate = data.updated_at;
+    updateDebug("Gist data received. Scanning files...");
     
     let chars = [];
-    // 1. Try common filenames first
-    const charFiles = ['characters.json', SYNC_FILENAME, 'character.js', 'pixelwho_characters.json'];
-    for (const f of charFiles) {
-      if (data.files[f] && data.files[f].content) {
-        try { 
-          const parsed = JSON.parse(data.files[f].content);
-          if (Array.isArray(parsed)) { chars = parsed; break; }
-        } catch(e) {}
-      }
-    }
-    
-    // 2. Scan EVERY file in the Gist for character data if still empty
-    if (chars.length === 0) {
-      for (const f in data.files) {
-        try {
-          const content = data.files[f].content;
-          const parsed = JSON.parse(content);
-          if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].image)) {
-            chars = parsed;
-            break;
-          }
-        } catch(e) {}
-      }
-    }
-    
     let opeds = [];
-    if (data.files['opeds.json']) {
-      try { opeds = JSON.parse(data.files['opeds.json'].content); } catch(e) {}
+    
+    // Scan EVERY file in the Gist
+    for (const filename in data.files) {
+      const file = data.files[filename];
+      try {
+        const parsed = JSON.parse(file.content);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Is it characters?
+          if (parsed[0].name && parsed[0].image) {
+            chars = parsed;
+            updateDebug("Found " + chars.length + " characters in " + filename);
+          }
+          // Is it OPEDs?
+          else if (parsed[0].youtubeId) {
+            opeds = parsed;
+            updateDebug("Found " + opeds.length + " OP/EDs in " + filename);
+          }
+        }
+      } catch(e) {}
     }
     
     return { chars, opeds };
@@ -4022,6 +4023,7 @@
       });
 
       if (cAdded || chars.length > 0) { 
+        updateDebug("Refreshing game state...");
         buildSeriesFilter(); 
         updateModCharCount(); 
         renderEditList(); 
@@ -4046,6 +4048,7 @@
         
         resetPool(); 
         loadNext();
+        updateDebug("Game started!");
       }
       if (oAdded) { 
         saveOpeds(); 
