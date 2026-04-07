@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0f0e17">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>WhosDat</title>
+  <title>PixelWho</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -28,15 +28,6 @@
       --border:  rgba(255,255,255,0.08);
     }
 
-    body.light-theme {
-      --bg:      #f5f5f7;
-      --surface: #ffffff;
-      --surface2:#f0f0f3;
-      --text:    #1a1a1a;
-      --muted:   #666666;
-      --border:  rgba(0,0,0,0.08);
-    }
-
     body {
       background: var(--bg);
       color: var(--text);
@@ -53,9 +44,8 @@
       width: 100%;
       max-width: 700px;
       display: grid;
-      grid-template-columns: 44px 1fr 44px 44px;
+      grid-template-columns: 44px 1fr 44px;
       align-items: center;
-      gap: 8px;
       padding: 28px 20px 16px;
       position: relative;
     }
@@ -105,41 +95,6 @@
     #streak-count { color: var(--accent); min-width: 14px; text-align: center; }
     #streak-count.bump { animation: bump 0.25s ease; }
     @keyframes bump { 50% { transform: scale(1.5); } }
-
-    /* ── Theme Toggle Button ─────────────────────────────────── */
-    .theme-toggle {
-      width: 40px; height: 40px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.2rem; transition: all 0.2s ease;
-      flex-shrink: 0; padding: 0; font-family: inherit;
-    }
-    .theme-toggle:hover { border-color: var(--accent); background: var(--surface2); transform: scale(1.05); }
-    .theme-toggle:active { transform: scale(0.95); }
-
-    .sound-toggle {
-      position: fixed; bottom: 20px; right: 20px; z-index: 50;
-      width: 48px; height: 48px; border-radius: 50%;
-      background: var(--surface); border: 1.5px solid var(--border);
-      color: var(--text); font-size: 1.3rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s ease; padding: 0; font-family: inherit;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-    .sound-toggle:hover { border-color: var(--accent); background: var(--surface2); transform: scale(1.1); }
-    .sound-toggle:active { transform: scale(0.95); }
-    .sound-toggle.muted { opacity: 0.6; }
-
-    .edit-search-wrap { margin-bottom: 12px; }
-    .edit-search {
-      width: 100%; padding: 10px 12px; border-radius: 8px;
-      background: var(--surface); border: 1px solid var(--border);
-      color: var(--text); font-size: 0.9rem; font-family: inherit;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    .edit-search:focus { outline: none; border-color: var(--accent); background: var(--surface2); }
-    .edit-search::placeholder { color: var(--muted); }
 
     /* ── Drawer ─────────────────────────────────────────────── */
     .drawer-overlay {
@@ -1341,7 +1296,7 @@
 
   <div class="drawer" id="drawer">
     <div class="drawer-header">
-      <div class="drawer-logo">WhosDat</div>
+      <div class="drawer-logo">PIXELWHO</div>
       <div class="drawer-tagline">Guess · Rank · Quiz</div>
     </div>
     <nav class="drawer-nav">
@@ -1381,10 +1336,9 @@
       <span></span><span></span><span></span>
     </button>
     <div>
-      <div class="logo">WhosDat</div>
+      <div class="logo">PIXELWHO</div>
       <span class="active-section-label" id="active-label">Image Game</span>
     </div>
-    <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light theme" aria-label="Toggle theme">🌙</button>
     <div class="streak-badge" id="streak-badge">
       <span>🔥</span>
       <span id="streak-count">0</span>
@@ -1499,10 +1453,6 @@
       <button class="btn" id="quiz-skip-btn" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border)">Skip</button>
       <button class="btn" id="quiz-next-btn" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:none">Next →</button>
     </div>
-    <div id="quiz-share-row" style="display:none;gap:8px;width:100%">
-      <button class="share-btn" id="quiz-share-spoiler" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border)">🙈 Spoiler-Free</button>
-      <button class="share-btn" id="quiz-share-normal" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff">📢 Spoil It</button>
-    </div>
   </div>
 
 
@@ -1561,10 +1511,6 @@
       <button class="btn" id="oped-skip-btn" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border)">Skip</button>
       <button class="btn" id="oped-next-btn" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;display:none">Next →</button>
     </div>
-    <div id="oped-share-row" style="display:none;gap:8px;width:100%">
-      <button class="share-btn" id="oped-share-spoiler" style="background:var(--surface2);color:var(--muted);border:1.5px solid var(--border)">🙈 Spoiler-Free</button>
-      <button class="share-btn" id="oped-share-normal" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff">📢 Spoil It</button>
-    </div>
 
     <div class="oped-empty-state" id="oped-empty" style="display:none">
       <div class="oped-empty-icon">🎵</div>
@@ -1619,11 +1565,6 @@
           <div class="stat-label">Best Streak</div>
         </div>
       </div>
-    </div>
-
-    <div class="stats-group">
-      <div class="stats-group-header">📊 Difficulty Breakdown</div>
-      <div id="difficulty-stats"></div>
     </div>
 
     <button class="stats-reset-btn" id="stats-reset-btn">Reset all stats</button>
@@ -1720,21 +1661,6 @@
       </div>
 
       <button class="mod-add-btn" id="mod-add-btn">Add to Session + Generate Code</button>
-
-      <div style="margin-top:24px; padding-top:24px; border-top:1px solid var(--border);">
-        <div style="font-size:0.85rem; font-weight:600; color:var(--text); margin-bottom:12px;">📦 Batch Operations</div>
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="mod-add-btn" id="batch-export-btn" style="flex:1; min-width:150px;">📥 Export All (JSON)</button>
-          <button class="mod-add-btn" id="batch-import-btn" style="flex:1; min-width:150px;">📤 Import (JSON)</button>
-        </div>
-        <div id="batch-import-area" style="display:none; margin-top:12px;">
-          <textarea id="batch-import-text" placeholder="Paste JSON array here..." style="width:100%; height:120px; padding:10px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); font-family:monospace; font-size:0.8rem; resize:vertical;"></textarea>
-          <div style="display:flex; gap:8px; margin-top:8px;">
-            <button class="mod-add-btn" id="batch-import-confirm" style="flex:1;">✓ Import</button>
-            <button class="mod-add-btn" id="batch-import-cancel" style="flex:1; background:var(--surface2); color:var(--muted); border:1.5px solid var(--border);">✕ Cancel</button>
-          </div>
-        </div>
-      </div>
 
       <div class="mod-code-wrap" id="mod-code-wrap">
         <div class="mod-code-header">
@@ -1845,7 +1771,7 @@
             <div class="sync-step-num">1</div>
             <div class="sync-step-body">
               Create a <strong>GitHub Personal Access Token</strong> with <code>gist</code> scope.<br>
-              <a class="sync-link" href="https://github.com/settings/tokens/new?scopes=gist&description=WhosDat+Sync" target="_blank" rel="noopener">Open token page ↗</a>
+              <a class="sync-link" href="https://github.com/settings/tokens/new?scopes=gist&description=PixelWho+Sync" target="_blank" rel="noopener">Open token page ↗</a>
               <span style="font-size:0.75rem;color:var(--muted)"> (check "Gist", set any expiry, click Generate)</span>
             </div>
           </div>
@@ -1954,7 +1880,6 @@
     </div>
 
     </div> </div>
-  <button class="sound-toggle" id="sound-toggle" title="Toggle sound effects" aria-label="Toggle sound effects">🔊</button>
   <script>
   // ═══════════════════════════════════════════════════
   //  CHARACTERS — add yours here
@@ -2317,10 +2242,10 @@
         else if(i===wrongCount && won) dots+='🟩';
         else dots+='⬛';
       }
-      return (dailyMode||result) ? `WhosDat Daily ${today}\n${dots}\n${guessNum}/${maxG}` : `WhosDat 🎮\n${dots}`;
+      return (dailyMode||result) ? `PixelWho Daily ${today}\n${dots}\n${guessNum}/${maxG}` : `PixelWho 🎮\n${dots}`;
     } else {
-      if(won) return (dailyMode||result) ? `I got the WhosDat Daily! It was ${name} in ${guessNum}/${maxG} guesses! (${today})` : `I got ${name} in ${guessNum} guess${guessNum===1?'':'es'} on WhosDat!`;
-      else return (dailyMode||result) ? `I failed the WhosDat Daily — it was ${name}. (${today})` : `I couldn't get ${name} on WhosDat!`;
+      if(won) return (dailyMode||result) ? `I got the PixelWho Daily! It was ${name} in ${guessNum}/${maxG} guesses! (${today})` : `I got ${name} in ${guessNum} guess${guessNum===1?'':'es'} on PixelWho!`;
+      else return (dailyMode||result) ? `I failed the PixelWho Daily — it was ${name}. (${today})` : `I couldn't get ${name} on PixelWho!`;
     }
   }
 
@@ -2339,36 +2264,6 @@
 
   document.getElementById('share-spoiler').addEventListener('click', ()=>shareResult(true));
   document.getElementById('share-normal').addEventListener('click',  ()=>shareResult(false));
-  
-  document.getElementById('quiz-share-spoiler').addEventListener('click', ()=>shareQuizResult(true));
-  document.getElementById('quiz-share-normal').addEventListener('click', ()=>shareQuizResult(false));
-  
-  document.getElementById('oped-share-spoiler').addEventListener('click', ()=>shareOpedResult(true));
-  document.getElementById('oped-share-normal').addEventListener('click', ()=>shareOpedResult(false));
-  
-  function shareQuizResult(spoilerFree) {
-    const text = spoilerFree 
-      ? 'I got a Quote Quiz right on WhosDat! 🎯'
-      : 'I got ' + quizChar.name + ' on WhosDat Quote Quiz!';
-    navigator.clipboard.writeText(text).then(()=>{
-      const btn = spoilerFree ? document.getElementById('quiz-share-spoiler') : document.getElementById('quiz-share-normal');
-      const orig = btn.textContent;
-      btn.textContent = '✓ Copied!'; btn.classList.add('copied');
-      setTimeout(()=>{ btn.textContent=orig; btn.classList.remove('copied'); },2000);
-    });
-  }
-  
-  function shareOpedResult(spoilerFree) {
-    const text = spoilerFree
-      ? 'I got an OP/ED right on WhosDat! 🎵'
-      : 'I got ' + opedCurrent.title + ' on WhosDat OP/ED Quiz!';
-    navigator.clipboard.writeText(text).then(()=>{
-      const btn = spoilerFree ? document.getElementById('oped-share-spoiler') : document.getElementById('oped-share-normal');
-      const orig = btn.textContent;
-      btn.textContent = '✓ Copied!'; btn.classList.add('copied');
-      setTimeout(()=>{ btn.textContent=orig; btn.classList.remove('copied'); },2000);
-    });
-  }
 
   function submitGuess(raw){
     if(gameState!=='playing') return;
@@ -2380,7 +2275,6 @@
 
   function win(){
     gameState='correct'; streak++;
-    playCorrectSound();
     charImg.style.filter=''; charImg.style.clipPath=''; charImg.classList.remove('crop-mode');
     setStreak(streak); gInput.disabled=true; gInput.classList.add('flash-correct');
     resName.textContent=currentChar.name; resOverlay.className='result-overlay correct';
@@ -2389,12 +2283,11 @@
     if(!dailyMode){ nextBtn.classList.add('show'); skipBtn.classList.add('hide'); }
     shareRow.classList.add('show');
     recordGame(true, streak);
-    if(streak>0 && streak%5===0) { showMilestone(streak); playMilestoneSound(); }
+    if(streak>0 && streak%5===0) showMilestone(streak);
     if(dailyMode){ saveDailyResult({won:true,wrongCount:maxGuesses-guessesLeft,name:currentChar.name,maxGuesses}); showDailyComplete({won:true,wrongCount:maxGuesses-guessesLeft,name:currentChar.name,maxGuesses}); }
   }
 
   function miss(text){
-    playWrongSound();
     const maxGuesses = cropMode ? 6 : 5;
     dots[maxGuesses-guessesLeft].classList.add('used'); guessesLeft--;
     if(blurMode){ const b=Math.max(0,BLUR_START-(maxGuesses-guessesLeft)*BLUR_STEP); charImg.style.filter='blur('+b+'px)'; }
@@ -2804,7 +2697,6 @@
     document.getElementById('quiz-reveal-name').textContent    = quizChar.name;
     document.getElementById('quiz-next-btn').style.display = '';
     document.getElementById('quiz-skip-btn').style.display = 'none';
-    document.getElementById('quiz-share-row').style.display = 'flex';
   }
 
   function bumpQuizStreak(n) {
@@ -2875,18 +2767,11 @@
   // ═══════════════════════════════════════════════════
   //  STATS SYSTEM
   // ═══════════════════════════════════════════════════
-  const STATS_KEY = 'whosdat-stats-v2';
+  const STATS_KEY = 'whosdat-stats-v1';
 
   function loadStats() {
     try { const s = localStorage.getItem(STATS_KEY); if (s) return JSON.parse(s); } catch(e) {}
-    return {
-      game: { played:0, correct:0, bestStreak:0 },
-      normal: { played:0, correct:0, bestStreak:0 },
-      blur: { played:0, correct:0, bestStreak:0 },
-      crop: { played:0, correct:0, bestStreak:0 },
-      daily: { played:0, correct:0, bestStreak:0 },
-      quiz: { played:0, correct:0, bestStreak:0 }
-    };
+    return { game: { played:0, correct:0, bestStreak:0 }, quiz: { played:0, correct:0, bestStreak:0 } };
   }
   function saveStats(st) { try { localStorage.setItem(STATS_KEY, JSON.stringify(st)); } catch(e) {} }
 
@@ -2895,12 +2780,6 @@
     st.game.played++;
     if (correct) st.game.correct++;
     if (currentStreak > st.game.bestStreak) st.game.bestStreak = currentStreak;
-    
-    const difficulty = dailyMode ? 'daily' : (blurMode ? 'blur' : (cropMode ? 'crop' : 'normal'));
-    st[difficulty].played++;
-    if (correct) st[difficulty].correct++;
-    if (currentStreak > st[difficulty].bestStreak) st[difficulty].bestStreak = currentStreak;
-    
     saveStats(st);
     check9000(st);
   }
@@ -2932,30 +2811,11 @@
     document.getElementById('st-q-correct').textContent = st.quiz.correct;
     document.getElementById('st-q-acc').textContent     = pct(st.quiz.correct, st.quiz.played);
     document.getElementById('st-q-best').textContent    = st.quiz.bestStreak;
-    
-    const diffStats = document.getElementById('difficulty-stats');
-    if (diffStats) {
-      const difficulties = ['normal', 'blur', 'crop', 'daily'];
-      const labels = { normal: 'Normal', blur: 'Blur', crop: 'Crop', daily: 'Daily' };
-      let html = '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px;">';
-      difficulties.forEach(d => {
-        const s = st[d];
-        const acc = pct(s.correct, s.played);
-        html += '<div style="background:var(--surface);padding:12px;border-radius:8px;border:1px solid var(--border);">';
-        html += '<div style="font-size:0.75rem;color:var(--muted);margin-bottom:4px;">' + labels[d] + '</div>';
-        html += '<div style="font-size:0.9rem;font-weight:600;">' + s.played + ' played</div>';
-        html += '<div style="font-size:0.85rem;color:var(--accent);">' + s.correct + ' correct · ' + acc + '</div>';
-        html += '<div style="font-size:0.8rem;color:var(--muted);margin-top:4px;">Best: ' + s.bestStreak + '</div>';
-        html += '</div>';
-      });
-      html += '</div>';
-      diffStats.innerHTML = html;
-    }
   }
 
   document.getElementById('stats-reset-btn').addEventListener('click', () => {
     if (!confirm('Reset all stats? This cannot be undone.')) return;
-    saveStats({ game:{played:0,correct:0,bestStreak:0}, normal:{played:0,correct:0,bestStreak:0}, blur:{played:0,correct:0,bestStreak:0}, crop:{played:0,correct:0,bestStreak:0}, daily:{played:0,correct:0,bestStreak:0}, quiz:{played:0,correct:0,bestStreak:0} });
+    saveStats({ game:{played:0,correct:0,bestStreak:0}, quiz:{played:0,correct:0,bestStreak:0} });
     renderStats();
   });
 
@@ -2972,7 +2832,7 @@
       const catVal = document.getElementById('tl-category').value.trim();
       const titleEl = document.createElement('div');
       titleEl.style.cssText = 'font-family:Bebas Neue,sans-serif;font-size:1.8rem;letter-spacing:0.08em;color:#ff8906;margin-bottom:16px;';
-      titleEl.textContent = catVal ? 'WhosDat — ' + catVal : 'WhosDat Tier List';
+      titleEl.textContent = catVal ? 'PixelWho — ' + catVal : 'PixelWho Tier List';
       snap.appendChild(titleEl);
 
       const tlClone = document.getElementById('tier-list').cloneNode(true);
@@ -2986,7 +2846,7 @@
 
       const wm = document.createElement('div');
       wm.style.cssText = 'margin-top:12px;font-size:0.7rem;color:rgba(167,169,190,0.35);text-align:right;';
-      wm.textContent = 'WhosDat · ' + new Date().toLocaleDateString();
+      wm.textContent = 'PixelWho · ' + new Date().toLocaleDateString();
       snap.appendChild(wm);
 
       document.body.appendChild(snap);
@@ -3487,28 +3347,11 @@
     container.innerHTML = '';
     const all = window.CHARACTERS || [];
     const q = (query || '').trim().toLowerCase();
-    let chars = q ? all.filter(c => c.name.toLowerCase().includes(q) || (c.series||'').toLowerCase().includes(q)) : all;
-    
-    if (q) {
-      chars.sort((a, b) => {
-        const aNameMatch = a.name.toLowerCase().startsWith(q);
-        const bNameMatch = b.name.toLowerCase().startsWith(q);
-        if (aNameMatch && !bNameMatch) return -1;
-        if (!aNameMatch && bNameMatch) return 1;
-        return a.name.localeCompare(b.name);
-      });
-    }
-    
+    const chars = q ? all.filter(c => c.name.toLowerCase().includes(q) || (c.series||'').toLowerCase().includes(q)) : all;
     if (!chars.length) {
-      container.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:16px">' + (q ? 'No matches found.' : 'No characters yet.') + '</div>';
+      container.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:16px">' + (q ? 'No matches.' : 'No characters yet.') + '</div>';
       return;
     }
-    
-    const resultCount = document.createElement('div');
-    resultCount.style.cssText = 'font-size:0.75rem;color:var(--muted);padding:8px 12px;text-align:center;';
-    resultCount.textContent = chars.length + ' character' + (chars.length !== 1 ? 's' : '');
-    container.appendChild(resultCount);
-    
     chars.forEach(c => {
       const item = document.createElement('div');
       item.className = 'edit-char-item';
@@ -4205,7 +4048,6 @@
       document.getElementById('oped-next-btn').style.display = '';
       document.getElementById('oped-skip-btn').style.display = 'none';
       document.getElementById('oped-replay-btn').disabled = true;
-      document.getElementById('oped-share-row').style.display = 'flex';
     } else {
       opedGuessesLeft--;
       const dotIdx = 5 - opedGuessesLeft - 1;
@@ -4229,7 +4071,6 @@
         document.getElementById('oped-next-btn').style.display = '';
         document.getElementById('oped-skip-btn').style.display = 'none';
         document.getElementById('oped-replay-btn').disabled = true;
-        document.getElementById('oped-share-row').style.display = 'flex';
       }
     }
   }
@@ -4389,118 +4230,8 @@
     }
   });
 
-  // Theme Toggle
-  const THEME_KEY = 'whosdat-theme';
-  function initTheme() {
-    const saved = localStorage.getItem(THEME_KEY) || 'dark';
-    applyTheme(saved);
-  }
-  function applyTheme(theme) {
-    if (theme === 'light') {
-      document.body.classList.add('light-theme');
-      document.getElementById('theme-toggle').textContent = '☀️';
-      localStorage.setItem(THEME_KEY, 'light');
-    } else {
-      document.body.classList.remove('light-theme');
-      document.getElementById('theme-toggle').textContent = '🌙';
-      localStorage.setItem(THEME_KEY, 'dark');
-    }
-  }
-  document.getElementById('theme-toggle').addEventListener('click', () => {
-    const current = localStorage.getItem(THEME_KEY) || 'dark';
-    const next = current === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-  });
-  initTheme();
-
-  // Sound Effects
-  const SOUND_KEY = 'whosdat-sound-enabled';
-  let soundEnabled = localStorage.getItem(SOUND_KEY) !== 'false';
-  const soundToggle = document.getElementById('sound-toggle');
-  
-  function updateSoundUI() {
-    if (soundEnabled) {
-      soundToggle.textContent = '🔊';
-      soundToggle.classList.remove('muted');
-    } else {
-      soundToggle.textContent = '🔇';
-      soundToggle.classList.add('muted');
-    }
-  }
-  
-  function playSound(freq, duration) {
-    if (!soundEnabled) return;
-    try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      osc.connect(gain);
-      gain.connect(audioContext.destination);
-      osc.frequency.value = freq;
-      osc.type = 'sine';
-      gain.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
-      osc.start(audioContext.currentTime);
-      osc.stop(audioContext.currentTime + duration);
-    } catch(e) {}
-  }
-  
-  function playCorrectSound() { playSound(800, 0.2); playSound(1000, 0.2); }
-  function playWrongSound() { playSound(300, 0.15); playSound(250, 0.15); }
-  function playMilestoneSound() { playSound(1200, 0.1); playSound(1400, 0.1); playSound(1200, 0.1); }
-  
-  soundToggle.addEventListener('click', () => {
-    soundEnabled = !soundEnabled;
-    localStorage.setItem(SOUND_KEY, soundEnabled);
-    updateSoundUI();
-  });
-  
-  updateSoundUI();
-
-  // Keyboard Shortcuts
-  document.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() === 's' && gameState !== 'playing' && !dailyMode) {
-      skipBtn.click();
-      e.preventDefault();
-    }
-    if (e.key.toLowerCase() === 'n' && gameState !== 'playing' && !dailyMode) {
-      nextBtn.click();
-      e.preventDefault();
-    }
-    if (e.key.toLowerCase() === 'h' && gameState === 'playing' && hintBtn.style.display !== 'none') {
-      hintBtn.click();
-      e.preventDefault();
-    }
-    if (e.key.toLowerCase() === 't' && e.ctrlKey) {
-      document.getElementById('theme-toggle').click();
-      e.preventDefault();
-    }
-    if (e.key.toLowerCase() === 'm' && e.ctrlKey) {
-      soundToggle.click();
-      e.preventDefault();
-    }
-  });
-
-  // Accessibility improvements
-  document.querySelectorAll('.gmode-btn').forEach(btn => {
-    const mode = btn.dataset.gmode;
-    btn.setAttribute('aria-label', mode.charAt(0).toUpperCase() + mode.slice(1) + ' mode');
-  });
-
-  const resultButtons = ['skip-btn', 'next-btn', 'hint-btn'];
-  resultButtons.forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) {
-      if (id === 'skip-btn') btn.setAttribute('aria-label', 'Skip this character');
-      if (id === 'next-btn') btn.setAttribute('aria-label', 'Load next character');
-      if (id === 'hint-btn') btn.setAttribute('aria-label', 'Get a hint about the series');
-    }
-  });
-
-  gInput.setAttribute('aria-label', 'Guess the character name');
-
   initGame();
   buildSeriesFilter();
   </script>
-  </body>
+</body>
 </html>
