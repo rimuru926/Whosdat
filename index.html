@@ -2276,6 +2276,11 @@
   function loadNext(){
     if(dailyMode){ loadDailyMode(); return; }
     if(!pool.length) resetPool();
+    if(!pool.length) {
+      // Still no characters after resetPool? Show empty state
+      initGame();
+      return;
+    }
     currentChar=pool.pop();
     clearGameUI();
     applyImageLoad();
@@ -3999,14 +4004,33 @@
         }
       });
 
-      if (cAdded) { 
+      if (cAdded || chars.length > 0) { 
         buildSeriesFilter(); 
         updateModCharCount(); 
         renderEditList(); 
         renderNoQuote(); 
         // Refresh the game pool so the new characters show up immediately
-        if (typeof resetPool === 'function') resetPool();
-        if (typeof loadNext === 'function') loadNext();
+        const card = document.getElementById('char-card');
+        if (card && card.innerHTML.includes('No characters found')) {
+            // Restore original HTML structure if it was replaced by error message
+            card.innerHTML = `
+              <img id="char-img" src="" alt="Guess this character">
+              <div class="loading-cover" id="loading-cover"><div class="spinner"></div></div>
+              <div class="result-overlay" id="result-overlay">
+                <div class="result-icon" id="result-icon"></div>
+                <div class="result-name" id="result-name"></div>
+              </div>
+              <button id="fs-expand-btn" onclick="openLightbox()" title="View Fullscreen">⤢</button>
+            `;
+            // Re-bind elements that were inside char-card
+            const charImg = document.getElementById('char-img');
+            const loadCover = document.getElementById('loading-cover');
+            // Update global references
+            window.charImg = charImg;
+            window.loadCover = loadCover;
+        }
+        resetPool(); 
+        loadNext();
       }
       if (oAdded) { 
         saveOpeds(); 
