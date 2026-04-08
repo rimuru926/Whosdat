@@ -12,6 +12,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -595,6 +597,51 @@
       letter-spacing: 0.04em;
     }
     .stat-cell.accent-cell .stat-value { color: var(--correct); }
+
+    /* Nickname & Leaderboard */
+    .nickname-group {
+      width: 100%; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 18px;
+      padding: 20px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .nickname-label {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .nickname-input-row { display: flex; gap: 10px; }
+    .nickname-input {
+      flex: 1; background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: 10px; padding: 10px 14px; color: var(--text);
+      font-family: 'Outfit', sans-serif; font-size: 0.9rem; outline: none;
+      transition: border-color 0.2s;
+    }
+    .nickname-input:focus { border-color: var(--accent); }
+    .nickname-save-btn {
+      padding: 0 16px; background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: 10px; color: var(--text); font-family: 'Outfit', sans-serif;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .nickname-save-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .leaderboard-list { display: flex; flex-direction: column; gap: 8px; padding: 10px 0; }
+    .leaderboard-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; background: var(--surface2); border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+    .lb-rank { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: var(--muted); width: 24px; }
+    .lb-name { flex: 1; font-weight: 600; font-size: 0.95rem; color: var(--text); margin-left: 8px; }
+    .lb-score { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: var(--accent); }
+    .lb-empty { text-align: center; padding: 20px; color: var(--muted); font-size: 0.85rem; opacity: 0.6; }
+
+    /* Global Leaderboard Tabs */
+    .leaderboard-tabs { width: 100%; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding-bottom: 8px; }
+    .leaderboard-tabs::-webkit-scrollbar { display: none; }
+    .lb-tab-btn { padding: 8px 14px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 10px; color: var(--muted); font-family: 'Outfit', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; flex-shrink: 0; }
+    .lb-tab-btn:hover { border-color: var(--accent); color: var(--text); }
+    .lb-tab-btn.active { background: rgba(255,137,6,0.13); border-color: var(--accent); color: var(--accent); }
+    .lb-loading { text-align: center; padding: 20px; color: var(--muted); font-size: 0.85rem; }
+
     .stats-reset-btn {
       width: 100%; padding: 12px; background: transparent;
       border: 1.5px solid rgba(242,95,76,0.25); border-radius: 12px;
@@ -1523,6 +1570,27 @@
   <div id="stats-section" class="section">
     <div class="stats-title">Your Stats</div>
 
+    <div class="nickname-group">
+      <div class="nickname-label">Your Nickname</div>
+      <div class="nickname-input-row">
+        <input class="nickname-input" id="nickname-input" type="text" placeholder="Anonymous" maxlength="16">
+        <button class="nickname-save-btn" id="nickname-save-btn">Save</button>
+      </div>
+    </div>
+
+    <div class="stats-group">
+      <div class="stats-group-header">🏆 Global Leaderboard</div>
+      <div class="leaderboard-tabs" id="leaderboard-tabs">
+        <button class="lb-tab-btn active" data-mode="normal">🖼️ Normal</button>
+        <button class="lb-tab-btn" data-mode="blur">🌫️ Blur</button>
+        <button class="lb-tab-btn" data-mode="crop">🔍 Crop</button>
+        <button class="lb-tab-btn" data-mode="quote">💬 Quote</button>
+      </div>
+      <div class="leaderboard-list" id="leaderboard-list">
+        <div class="lb-loading">Loading leaderboard...</div>
+      </div>
+    </div>
+
     <div class="stats-group">
       <div class="stats-group-header">🖼️ Image Game</div>
       <div class="stats-grid">
@@ -1901,21 +1969,15 @@
     </div> </div>
   <script>
   // ═══════════════════════════════════════════════════
-  //  CHARACTERS — add yours here
-  //  Each entry needs: name, image
-  //  Optional: series, quote, quote2, quote3
+  //  PUBLIC GIST — data source for all visitors
+  //  Fetched anonymously on every page load.
   // ═══════════════════════════════════════════════════
-  const CHARACTERS = [
+  const PUBLIC_GIST_ID = 'f42bec521cad396eb4d3d10ac596fc92';
 
-    // Paste character blocks here, e.g:
-    // {
-    //   name: "Roronoa Zoro",
-    //   series: "One Piece",
-    //   image: "images/zoro.jpg",
-    //   quote: "Nothing happened.",
-    // },
-
-  ];
+  // ═══════════════════════════════════════════════════
+  //  CHARACTERS — populated from Gist on load
+  // ═══════════════════════════════════════════════════
+  const CHARACTERS = [];
 
   // ═══════════════════════════════════════════════════
   //  OP/ED DATA
@@ -2785,9 +2847,38 @@
   document.getElementById('quiz-next-btn').addEventListener('click', loadQuizNext);
 
   // ═══════════════════════════════════════════════════
-  //  STATS SYSTEM
+  //  STATS SYSTEM WITH FIREBASE GLOBAL LEADERBOARD
   // ═══════════════════════════════════════════════════
   const STATS_KEY = 'whosdat-stats-v1';
+  const NICKNAME_KEY = 'whosdat-nickname';
+
+  // FIREBASE CONFIG — LINKED TO YOUR PIXELWHO PROJECT
+  const firebaseConfig = {
+    apiKey: "AIzaSyBzMPqLMUmdZbNG_QMl7YzDsvO_ZEcsMDk",
+    authDomain: "pixelwho-leaderboard.firebaseapp.com",
+    projectId: "pixelwho-leaderboard",
+    storageBucket: "pixelwho-leaderboard.firebasestorage.app",
+    messagingSenderId: "751533445593",
+    appId: "1:751533445593:web:15a70f2bf2447da76289c8",
+    measurementId: "G-LPD64LELVZ"
+  };
+
+  let db = null;
+  let currentMode = 'normal';
+  let globalLeaderboard = { normal: [], blur: [], crop: [], quote: [] };
+
+  // Initialize Firebase (using compat mode for easier integration into existing script)
+  (function initFirebase() {
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      db = firebase.firestore();
+      console.log("Firebase initialized successfully.");
+    } catch(e) {
+      console.error("Firebase initialization failed:", e);
+    }
+  })();
 
   function loadStats() {
     try { const s = localStorage.getItem(STATS_KEY); if (s) return JSON.parse(s); } catch(e) {}
@@ -2795,11 +2886,96 @@
   }
   function saveStats(st) { try { localStorage.setItem(STATS_KEY, JSON.stringify(st)); } catch(e) {} }
 
+  function loadNickname() { return localStorage.getItem(NICKNAME_KEY) || 'Anonymous'; }
+  function saveNickname(name) { localStorage.setItem(NICKNAME_KEY, name || 'Anonymous'); }
+
+  async function submitScore(mode, score) {
+    if (!db || score <= 0) return;
+    const nickname = loadNickname();
+    try {
+      await db.collection('leaderboard').add({
+        nickname: nickname,
+        nickname_lower: nickname.toLowerCase(),
+        mode: mode,
+        score: score,
+        timestamp: new Date()
+      });
+      await loadGlobalLeaderboard();
+    } catch(e) {
+      console.error('Failed to submit score:', e);
+    }
+  }
+
+  async function loadGlobalLeaderboard() {
+    if (!db) return;
+    try {
+      const snapshot = await db.collection('leaderboard').get();
+      globalLeaderboard = { normal: [], blur: [], crop: [], quote: [] };
+      const nicknameMap = {};
+
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const mode = data.mode || 'normal';
+        const nickname = data.nickname || 'Anonymous';
+        const score = data.score || 0;
+
+        const key = nickname.toLowerCase() + '-' + mode;
+        if (!nicknameMap[key] || nicknameMap[key].score < score) {
+          nicknameMap[key] = { nickname, mode, score };
+        }
+      });
+
+      Object.values(nicknameMap).forEach(entry => {
+        if (globalLeaderboard[entry.mode]) {
+          globalLeaderboard[entry.mode].push(entry);
+        }
+      });
+
+      Object.keys(globalLeaderboard).forEach(mode => {
+        globalLeaderboard[mode].sort((a, b) => b.score - a.score);
+        globalLeaderboard[mode] = globalLeaderboard[mode].slice(0, 10);
+      });
+
+      renderGlobalLeaderboard();
+    } catch(e) {
+      console.error('Failed to load leaderboard:', e);
+    }
+  }
+
+  function renderGlobalLeaderboard() {
+    const lbList = document.getElementById('leaderboard-list');
+    const lb = globalLeaderboard[currentMode] || [];
+    if (!lb.length) {
+      lbList.innerHTML = '<div class="lb-empty">No scores yet. Be the first!</div>';
+    } else {
+      lbList.innerHTML = lb.map((entry, i) => `
+        <div class="leaderboard-item">
+          <div class="lb-rank">#${i+1}</div>
+          <div class="lb-name">${entry.nickname}</div>
+          <div class="lb-score">${entry.score}</div>
+        </div>
+      `).join('');
+    }
+  }
+
+  document.querySelectorAll('.lb-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.lb-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentMode = btn.dataset.mode;
+      renderGlobalLeaderboard();
+    });
+  });
+
   function recordGame(correct, currentStreak) {
     const st = loadStats();
     st.game.played++;
     if (correct) st.game.correct++;
-    if (currentStreak > st.game.bestStreak) st.game.bestStreak = currentStreak;
+    if (currentStreak > st.game.bestStreak) {
+      st.game.bestStreak = currentStreak;
+      const mode = blurMode ? 'blur' : cropMode ? 'crop' : 'normal';
+      submitScore(mode, currentStreak);
+    }
     saveStats(st);
     check9000(st);
   }
@@ -2807,7 +2983,10 @@
     const st = loadStats();
     st.quiz.played++;
     if (correct) st.quiz.correct++;
-    if (currentStreak > st.quiz.bestStreak) st.quiz.bestStreak = currentStreak;
+    if (currentStreak > st.quiz.bestStreak) {
+      st.quiz.bestStreak = currentStreak;
+      submitScore('quote', currentStreak);
+    }
     saveStats(st);
     check9000(st);
   }
@@ -2831,13 +3010,66 @@
     document.getElementById('st-q-correct').textContent = st.quiz.correct;
     document.getElementById('st-q-acc').textContent     = pct(st.quiz.correct, st.quiz.played);
     document.getElementById('st-q-best').textContent    = st.quiz.bestStreak;
+
+    const nickInput = document.getElementById('nickname-input');
+    if (nickInput) nickInput.value = loadNickname() === 'Anonymous' ? '' : loadNickname();
+
+    loadGlobalLeaderboard();
   }
+
+  document.getElementById('nickname-save-btn').addEventListener('click', async () => {
+    const val = document.getElementById('nickname-input').value.trim();
+    const btn = document.getElementById('nickname-save-btn');
+    const orig = btn.textContent;
+
+    if (!val || val.toLowerCase() === 'anonymous') {
+      saveNickname('Anonymous');
+      btn.textContent = '✓ Saved';
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+      renderStats();
+      return;
+    }
+
+    // Check if nickname is already taken (case-insensitive)
+    if (db) {
+      btn.disabled = true;
+      btn.textContent = '⏳ Checking...';
+      try {
+        const snapshot = await db.collection('leaderboard')
+          .where('nickname_lower', '==', val.toLowerCase())
+          .limit(1)
+          .get();
+
+        if (!snapshot.empty) {
+          // If it's not the current user's own name, block it
+          if (val.toLowerCase() !== loadNickname().toLowerCase()) {
+            alert('This nickname is already taken! Please choose another.');
+            btn.disabled = false;
+            btn.textContent = orig;
+            return;
+          }
+        }
+      } catch(e) {
+        console.error("Error checking nickname:", e);
+      }
+      btn.disabled = false;
+    }
+
+    saveNickname(val);
+    btn.textContent = '✓ Saved';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+    renderStats();
+  });
 
   document.getElementById('stats-reset-btn').addEventListener('click', () => {
     if (!confirm('Reset all stats? This cannot be undone.')) return;
     saveStats({ game:{played:0,correct:0,bestStreak:0}, quiz:{played:0,correct:0,bestStreak:0} });
     renderStats();
   });
+
+  if (db) {
+    loadGlobalLeaderboard();
+  }
 
   // ═══════════════════════════════════════════════════
   //  TIER LIST EXPORT
@@ -4345,8 +4577,62 @@
     }
   });
 
-  initGame();
-  buildSeriesFilter();
+  // ═══════════════════════════════════════════════════
+  //  PUBLIC GIST AUTO-LOAD
+  //  Runs for every visitor (no token needed for public Gists).
+  //  Merges Gist data on top of anything already in localStorage,
+  //  then starts the game. Falls back gracefully on network error.
+  // ═══════════════════════════════════════════════════
+  (function publicGistAutoLoad() {
+    // Show a subtle loading message inside the card while we fetch
+    const card = document.getElementById('char-card');
+    const loadCoverEl = document.getElementById('loading-cover');
+    if (loadCoverEl) loadCoverEl.style.display = 'flex';
+
+    fetch('https://api.github.com/gists/' + PUBLIC_GIST_ID, {
+      headers: { 'Accept': 'application/vnd.github+json' }
+    })
+    .then(r => {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      // — Characters —
+      let gistChars = [];
+      const charsFile = data.files['characters.json'] || data.files['characters.js'];
+      if (charsFile && charsFile.content) {
+        try { gistChars = JSON.parse(charsFile.content); } catch(e) {}
+      }
+      gistChars.forEach(c => {
+        if (c && c.name && c.image && !window.CHARACTERS.find(x => x.name === c.name)) {
+          window.CHARACTERS.push(c);
+        }
+      });
+
+      // — OP/EDs —
+      if (data.files['opeds.json'] && data.files['opeds.json'].content) {
+        let gistOpeds = [];
+        try { gistOpeds = JSON.parse(data.files['opeds.json'].content); } catch(e) {}
+        gistOpeds.forEach(o => {
+          if (o && o.youtubeId && !window.OPEDS.find(x => x.youtubeId === o.youtubeId)) {
+            window.OPEDS.push(o);
+          }
+        });
+      }
+    })
+    .catch(() => {
+      // Network error or Gist unreachable — continue with whatever is in localStorage
+    })
+    .finally(() => {
+      // Always boot the game after the fetch attempt (success or failure)
+      buildSeriesFilter();
+      initGame();
+      // Refresh OP/ED pool if it was already open
+      if (opedReady) {
+        opedPool = [...window.OPEDS].sort(() => Math.random() - 0.5);
+      }
+    });
+  })();
   </script>
 </body>
 </html>
