@@ -1859,13 +1859,23 @@
         </div>
 
         <div class="mod-field">
+          <div class="mod-label">Song Name <span class="opt">(optional)</span></div>
+          <input class="mod-input" id="oped-mod-song" type="text"
+            placeholder="e.g. Sono Chi no Sadame" autocorrect="off" autocomplete="off">
+        </div>
+
+        <div class="mod-field">
           <div class="mod-label">YouTube Video ID <span class="req">REQUIRED</span></div>
-          <input class="mod-input" id="oped-mod-ytid" type="text"
-            placeholder="e.g. dAbIsShxB_g (from youtu.be/dAbIsShxB_g)"
-            autocorrect="off" autocomplete="off" spellcheck="false" style="font-family:monospace;font-size:0.85rem">
+          <div style="display:flex;gap:8px;align-items:stretch">
+            <input class="mod-input" id="oped-mod-ytid" type="text"
+              placeholder="e.g. dAbIsShxB_g (from youtu.be/dAbIsShxB_g)"
+              autocorrect="off" autocomplete="off" spellcheck="false" style="font-family:monospace;font-size:0.85rem;flex:1">
+            <button type="button" id="oped-test-link-btn" style="padding:0 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;color:var(--muted);font-family:Outfit,sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:color 0.15s,border-color 0.15s">Test Link</button>
+          </div>
           <div style="font-size:0.72rem;color:var(--muted);margin-top:4px">
             The ID after <code style="background:var(--surface2);padding:1px 5px;border-radius:4px;color:var(--accent);font-size:0.72rem">youtu.be/</code> or <code style="background:var(--surface2);padding:1px 5px;border-radius:4px;color:var(--accent);font-size:0.72rem">?v=</code> in the YouTube URL
           </div>
+          <div id="oped-link-status" style="font-size:0.75rem;margin-top:6px;min-height:1.2em"></div>
         </div>
 
         <div id="oped-mod-err" style="font-size:0.8rem;color:var(--wrong);min-height:1em"></div>
@@ -1902,6 +1912,7 @@
   //  OP/ED DATA
   // ═══════════════════════════════════════════════════
   let OPEDS = [];
+  let editingOpedIdx = null;
   (function loadOpeds() {
     try {
       const saved = JSON.parse(localStorage.getItem('whosdat-opeds') || '[]');
@@ -4044,7 +4055,9 @@
       stopOpedBars();
       
       const rev = document.getElementById('oped-answer-reveal');
-      rev.innerHTML = '✅ Correct! <strong>' + opedCurrent.title + '</strong>';
+      let revealText = '✅ Correct! <strong>' + opedCurrent.title + '</strong>';
+      if (opedCurrent.song) revealText += '<br><em style="font-size:0.85em;color:var(--muted);margin-top:8px;display:block">' + opedCurrent.song + '</em>';
+      rev.innerHTML = revealText;
       rev.classList.add('show');
       document.getElementById('oped-next-btn').style.display = '';
       document.getElementById('oped-skip-btn').style.display = 'none';
@@ -4067,7 +4080,9 @@
         try { ytPlayer && ytPlayer.stopVideo(); } catch(e){}
         stopOpedBars();
         const rev = document.getElementById('oped-answer-reveal');
-        rev.innerHTML = '❌ It was <strong>' + opedCurrent.title + '</strong> (' + (opedCurrent.type||'OP') + ')';
+        let revealText = '❌ It was <strong>' + opedCurrent.title + '</strong> (' + (opedCurrent.type||'OP') + ')';
+        if (opedCurrent.song) revealText += '<br><em style="font-size:0.85em;color:var(--muted);margin-top:8px;display:block">' + opedCurrent.song + '</em>';
+        rev.innerHTML = revealText;
         rev.classList.add('show');
         document.getElementById('oped-next-btn').style.display = '';
         document.getElementById('oped-skip-btn').style.display = 'none';
@@ -4153,7 +4168,9 @@
     try { ytPlayer && ytPlayer.stopVideo(); } catch(e){}
     stopOpedBars();
     const rev = document.getElementById('oped-answer-reveal');
-    rev.innerHTML = 'Skipped — it was <strong>' + opedCurrent.title + '</strong> (' + (opedCurrent.type||'OP') + ')';
+    let revealText = 'Skipped — it was <strong>' + opedCurrent.title + '</strong> (' + (opedCurrent.type||'OP') + ')';
+    if (opedCurrent.song) revealText += '<br><em style="font-size:0.85em;color:var(--muted);margin-top:8px;display:block">' + opedCurrent.song + '</em>';
+    rev.innerHTML = revealText;
     rev.classList.add('show');
     document.getElementById('oped-next-btn').style.display = '';
     document.getElementById('oped-skip-btn').style.display = 'none';
@@ -4179,7 +4196,22 @@
           <div class="oped-entry-title">${entry.title}</div>
           <div class="oped-entry-id">${entry.youtubeId}</div>
         </div>
-        <button class="oped-entry-del" data-idx="${idx}">✕</button>`;
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="oped-entry-edit" data-idx="${idx}" style="padding:5px 10px;background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;color:var(--accent);font-size:0.75rem;font-weight:600;cursor:pointer">Edit</button>
+          <button class="oped-entry-del" data-idx="${idx}" style="padding:5px 10px;background:transparent;border:1.5px solid rgba(242,95,76,0.25);border-radius:7px;color:var(--wrong);font-size:0.75rem;font-weight:600;cursor:pointer">Delete</button>
+        </div>`;
+      item.querySelector('.oped-entry-edit').addEventListener('click', () => {
+        editingOpedIdx = idx;
+        document.getElementById('oped-mod-title').value = entry.title;
+        document.getElementById('oped-mod-type').value = entry.type || 'OP';
+        document.getElementById('oped-mod-song').value = entry.song || '';
+        document.getElementById('oped-mod-ytid').value = entry.youtubeId;
+        document.getElementById('oped-mod-add-btn').textContent = '💾 Save Changes';
+        document.getElementById('oped-mod-add-btn').dataset.editing = 'true';
+        document.querySelectorAll('.mod-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.modtab === 'oped'));
+        document.querySelectorAll('.mod-tab-panel').forEach(p => p.classList.toggle('active', p.id === 'modtab-oped'));
+        document.getElementById('oped-mod-title').focus();
+      });
       item.querySelector('.oped-entry-del').addEventListener('click', () => {
         if (!confirm('Remove "' + entry.title + '" from library?')) return;
         OPEDS.splice(idx, 1);
@@ -4197,32 +4229,88 @@
   document.getElementById('oped-mod-add-btn').addEventListener('click', () => {
     const titleEl    = document.getElementById('oped-mod-title');
     const typeEl     = document.getElementById('oped-mod-type');
+    const songEl     = document.getElementById('oped-mod-song');
     const ytIdEl     = document.getElementById('oped-mod-ytid');
     const errEl      = document.getElementById('oped-mod-err');
     errEl.textContent = '';
 
     const title = titleEl.value.trim();
     const type  = typeEl.value;
+    const song  = songEl.value.trim();
     const _raw  = ytIdEl.value.trim();
     const _ytMatch = _raw.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|watch\?v=)([A-Za-z0-9_-]{11})/);
     const ytId  = _ytMatch ? _ytMatch[1] : _raw;
 
     if (!title) { errEl.textContent = 'Title is required.'; return; }
     if (!ytId)  { errEl.textContent = 'YouTube ID is required.'; return; }
-    if (OPEDS.find(e => e.youtubeId === ytId)) { errEl.textContent = 'This YouTube ID is already in the library.'; return; }
-
-    OPEDS.push({ title, type, youtubeId: ytId });
-    saveOpeds();
-    renderOpedEntryList();
-    renderSeriesLibrary();
-    syncAutoSync();
     
-    titleEl.value = ''; ytIdEl.value = '';
-    errEl.textContent = '';
-    errEl.style.color = 'var(--correct)';
-    errEl.textContent = '✅ Added "' + title + '"!';
-    setTimeout(() => { errEl.textContent = ''; errEl.style.color = ''; }, 2500);
+    const isEditing = editingOpedIdx !== null;
+    if (!isEditing && OPEDS.find(e => e.youtubeId === ytId)) { errEl.textContent = 'This YouTube ID is already in the library.'; return; }
+
+    if (isEditing) {
+      OPEDS[editingOpedIdx] = { title, type, youtubeId: ytId };
+      if (song) OPEDS[editingOpedIdx].song = song;
+      saveOpeds();
+      renderOpedEntryList();
+      renderSeriesLibrary();
+      syncAutoSync();
+      
+      titleEl.value = ''; songEl.value = ''; ytIdEl.value = '';
+      errEl.textContent = '';
+      errEl.style.color = 'var(--correct)';
+      errEl.textContent = '✅ Updated "' + title + '"!';
+      setTimeout(() => { errEl.textContent = ''; errEl.style.color = ''; }, 2500);
+      document.getElementById('oped-mod-add-btn').textContent = '+ Add to OP/ED Library';
+      document.getElementById('oped-mod-add-btn').dataset.editing = 'false';
+      editingOpedIdx = null;
+    } else {
+      const entry = { title, type, youtubeId: ytId };
+      if (song) entry.song = song;
+      OPEDS.push(entry);
+      saveOpeds();
+      renderOpedEntryList();
+      renderSeriesLibrary();
+      syncAutoSync();
+      
+      titleEl.value = ''; songEl.value = ''; ytIdEl.value = '';
+      errEl.textContent = '';
+      errEl.style.color = 'var(--correct)';
+      errEl.textContent = '✅ Added "' + title + '"!';
+      setTimeout(() => { errEl.textContent = ''; errEl.style.color = ''; }, 2500);
+    }
     opedPool = [...OPEDS].sort(() => Math.random() - 0.5);
+  });
+
+  document.getElementById('oped-test-link-btn').addEventListener('click', () => {
+    const ytIdEl = document.getElementById('oped-mod-ytid');
+    const statusEl = document.getElementById('oped-link-status');
+    const _raw = ytIdEl.value.trim();
+    const _ytMatch = _raw.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|watch\?v=)([A-Za-z0-9_-]{11})/);
+    const ytId = _ytMatch ? _ytMatch[1] : _raw;
+    
+    if (!ytId || ytId.length !== 11) {
+      statusEl.textContent = '❌ Invalid YouTube ID format';
+      statusEl.style.color = 'var(--wrong)';
+      return;
+    }
+    
+    statusEl.textContent = '⏳ Testing...';
+    statusEl.style.color = 'var(--muted)';
+    
+    fetch('https://www.youtube.com/oembed?url=https://youtu.be/' + ytId + '&format=json')
+      .then(r => {
+        if (r.ok) {
+          statusEl.textContent = '✅ Link is valid!';
+          statusEl.style.color = 'var(--correct)';
+        } else {
+          statusEl.textContent = '❌ Video not found or unavailable';
+          statusEl.style.color = 'var(--wrong)';
+        }
+      })
+      .catch(() => {
+        statusEl.textContent = '❌ Could not verify link';
+        statusEl.style.color = 'var(--wrong)';
+      });
   });
 
   document.querySelectorAll('.mod-tab-btn').forEach(btn => {
