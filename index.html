@@ -1635,6 +1635,16 @@
       </div>
     </div>
 
+    <div class="stats-group">
+      <div class="stats-group-header">💡 Suggest a Character</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <input class="nickname-input" id="suggest-char-name" type="text" placeholder="Character name" maxlength="50">
+        <input class="nickname-input" id="suggest-char-series" type="text" placeholder="Series/Show name" maxlength="50">
+        <textarea class="nickname-input" id="suggest-char-quote" placeholder="Quote (optional)" maxlength="200" style="resize:vertical;min-height:60px;font-family:'Outfit',sans-serif;padding:8px;"></textarea>
+        <button class="nickname-save-btn" id="suggest-submit-btn" style="width:100%;">Submit Suggestion</button>
+      </div>
+    </div>
+
     <button class="stats-reset-btn" id="stats-reset-btn">Reset all stats</button>
   </div>
 
@@ -1664,6 +1674,7 @@
       <button class="mod-tab-btn" data-modtab="series">📺 Series</button>
       <button class="mod-tab-btn" data-modtab="sync">☁️ Sync</button>
       <button class="mod-tab-btn" data-modtab="oped">🎵 OP/ED</button>
+      <button class="mod-tab-btn" data-modtab="suggestions">💡 Suggestions</button>
     </div>
 
     <div class="mod-tab-panel active" id="modtab-add">
@@ -1966,6 +1977,15 @@
 
     </div>
 
+    <div class="mod-tab-panel" id="modtab-suggestions">
+      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;line-height:1.6;">
+        Users can submit character and quote suggestions directly from the game. View all suggestions below:
+      </div>
+      <div id="suggestions-list" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="text-align:center;color:var(--muted);padding:20px;font-size:0.85rem;">Loading suggestions...</div>
+      </div>
+    </div>
+
     </div> </div>
   <script>
   // ═══════════════════════════════════════════════════
@@ -2079,7 +2099,15 @@
   function buildSeriesFilter() {
     const bar = document.getElementById('series-filter');
     const all = window.CHARACTERS || [];
-    const series = [...new Set(all.map(c=>c.series).filter(Boolean))].sort();
+    const seriesOrder = [];
+    const seriesSet = new Set();
+    all.forEach(c => {
+      if (c.series && !seriesSet.has(c.series)) {
+        seriesOrder.push(c.series);
+        seriesSet.add(c.series);
+      }
+    });
+    const series = seriesOrder;
     if (!series.length) { bar.style.display = 'none'; return; }
     bar.style.display = '';
     bar.innerHTML = '';
@@ -3072,6 +3100,82 @@
   }
 
   // ═══════════════════════════════════════════════════
+  //  CHARACTER SUGGESTIONS (Firebase)
+  // ═══════════════════════════════════════════════════
+  async function submitSuggestion() {
+    if (!db) {
+      alert('Database not available. Please try again later.');
+      return;
+    }
+    const charName = document.getElementById('suggest-char-name')?.value.trim();
+    const series = document.getElementById('suggest-char-series')?.value.trim();
+    const quote = document.getElementById('suggest-char-quote')?.value.trim();
+    const btn = document.getElementById('suggest-submit-btn');
+
+    if (!charName) {
+      alert('Please enter a character name.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Submitting...';
+    try {
+      await db.collection('suggestions').add({
+        characterName: charName,
+        series: series || 'Unknown',
+        quote: quote || '',
+        timestamp: new Date(),
+        userNickname: loadNickname()
+      });
+      alert('🎉 Suggestion submitted! Thank you for helping improve PixelWho!');
+      document.getElementById('suggest-char-name').value = '';
+      document.getElementById('suggest-char-series').value = '';
+      document.getElementById('suggest-char-quote').value = '';
+    } catch(e) {
+      console.error('Failed to submit suggestion:', e);
+      alert('Error submitting suggestion. Please try again.');
+    }
+    btn.disabled = false;
+    btn.textContent = 'Submit Suggestion';
+  }
+
+  async function loadSuggestions() {
+    if (!db) return;
+    try {
+      const snapshot = await db.collection('suggestions').orderBy('timestamp', 'desc').get();
+      const list = document.getElementById('suggestions-list');
+      if (snapshot.empty) {
+        list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:0.85rem;">No suggestions yet.</div>';
+        return;
+      }
+      list.innerHTML = snapshot.docs.map(doc => {
+        const data = doc.data();
+        const date = data.timestamp?.toDate?.()?.toLocaleDateString?.() || 'Unknown';
+        return `
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
+              <div>
+                <div style="font-weight:600;color:var(--text);">${data.characterName}</div>
+                <div style="font-size:0.8rem;color:var(--muted);">${data.series}</div>
+                ${data.quote ? `<div style="font-size:0.8rem;color:var(--accent);font-style:italic;margin-top:4px;\">“${data.quote}”</div>` : ''}
+                <div style="font-size:0.7rem;color:var(--muted);margin-top:6px;">Suggested by ${data.userNickname || 'Anonymous'} on ${date}</div>
+              </div>
+              <button onclick="if(confirm('Delete this suggestion?')) db.collection('suggestions').doc('${doc.id}').delete();loadSuggestions();" style="padding:4px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:0.75rem;cursor:pointer;">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch(e) {
+      console.error('Failed to load suggestions:', e);
+    }
+  }
+
+  // Attach suggestion submission to button if it exists
+  if (document.getElementById('suggest-submit-btn')) {
+    document.getElementById('suggest-submit-btn').addEventListener('click', submitSuggestion);
+  }
+
+  // ═══════════════════════════════════════════════════
   //  TIER LIST EXPORT
   // ═══════════════════════════════════════════════════
   document.getElementById('tl-export').addEventListener('click', async function() {
@@ -3791,6 +3895,7 @@
       renderEditList();
       renderSeriesLibrary();
       updateSavedBadge();
+      loadSuggestions();
     }
   }
 
