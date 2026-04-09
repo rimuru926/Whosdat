@@ -3166,33 +3166,57 @@
   }
 
   async function loadSuggestions() {
-    if (!db) return;
+    const database = window.db || db;
+    if (!database) {
+      console.warn("Firestore not initialized for loading suggestions.");
+      return;
+    }
     try {
-      const snapshot = await db.collection('suggestions').orderBy('timestamp', 'desc').get();
+      console.log("Loading suggestions from Firestore...");
+      const snapshot = await database.collection('suggestions').orderBy('timestamp', 'desc').get();
       const list = document.getElementById('suggestions-list');
+      if (!list) return;
+
       if (snapshot.empty) {
         list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:0.85rem;">No suggestions yet.</div>';
         return;
       }
+
       list.innerHTML = snapshot.docs.map(doc => {
         const data = doc.data();
-        const date = data.timestamp?.toDate?.()?.toLocaleDateString?.() || 'Unknown';
+        let date = 'Unknown';
+        try {
+          if (data.timestamp && data.timestamp.toDate) {
+            date = data.timestamp.toDate().toLocaleString();
+          } else if (data.timestamp) {
+            date = new Date(data.timestamp).toLocaleString();
+          }
+        } catch(dateErr) {}
+
         return `
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
             <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
-              <div>
-                <div style="font-weight:600;color:var(--text);">${data.characterName}</div>
-                <div style="font-size:0.8rem;color:var(--muted);">${data.series}</div>
-                ${data.quote ? `<div style="font-size:0.8rem;color:var(--accent);font-style:italic;margin-top:4px;\">“${data.quote}”</div>` : ''}
-                <div style="font-size:0.7rem;color:var(--muted);margin-top:6px;">Suggested by ${data.userNickname || 'Anonymous'} on ${date}</div>
+              <div style="flex:1">
+                <div style="font-weight:600;color:var(--text);font-size:0.95rem;">${data.characterName || 'Unknown'}</div>
+                <div style="font-size:0.8rem;color:var(--muted);">${data.series || 'No Series'}</div>
+                ${data.quote ? `<div style="font-size:0.8rem;color:var(--accent);font-style:italic;margin-top:4px;">“${data.quote}”</div>` : ''}
+                <div style="font-size:0.65rem;color:var(--muted);margin-top:8px;opacity:0.7;">
+                  By: ${data.userNickname || 'Anonymous'} • ${date}
+                </div>
               </div>
-              <button onclick="if(confirm('Delete this suggestion?')) db.collection('suggestions').doc('${doc.id}').delete();loadSuggestions();" style="padding:4px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:0.75rem;cursor:pointer;">Delete</button>
+              <button onclick="if(confirm('Delete this suggestion?')) window.db.collection('suggestions').doc('${doc.id}').delete().then(() => loadSuggestions());" 
+                      style="padding:6px 10px;background:rgba(242,95,76,0.1);border:1px solid rgba(242,95,76,0.2);border-radius:8px;color:var(--wrong);font-size:0.7rem;font-weight:600;cursor:pointer;transition:all 0.2s;">
+                Delete
+              </button>
             </div>
           </div>
         `;
       }).join('');
+      console.log(`Loaded ${snapshot.size} suggestions.`);
     } catch(e) {
       console.error('Failed to load suggestions:', e);
+      const list = document.getElementById('suggestions-list');
+      if (list) list.innerHTML = `<div style="color:var(--wrong);padding:20px;font-size:0.8rem;">Error loading suggestions: ${e.message}</div>`;
     }
   }
 
