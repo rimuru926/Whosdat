@@ -2102,12 +2102,29 @@
   let activeSeries = null;
 
   function getKnownSeries() {
-    const all = window.CHARACTERS || [];
-    const opeds = window.OPEDS || [];
+    const all = (window.CHARACTERS || []).slice().reverse();
+    const opeds = (window.OPEDS || []).slice().reverse();
     const counts = {};
-    all.forEach(c => { if (c.series) counts[c.series] = (counts[c.series] || 0) + 1; });
-    opeds.forEach(o => { if (o.title) counts[o.title] = (counts[o.title] || 0) + 1; });
-    return Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+    const order = [];
+    all.forEach(c => { 
+      if (c.series) {
+        if (!counts[c.series]) {
+          counts[c.series] = 0;
+          order.push(c.series);
+        }
+        counts[c.series]++;
+      }
+    });
+    opeds.forEach(o => { 
+      if (o.title) {
+        if (!counts[o.title]) {
+          counts[o.title] = 0;
+          order.push(o.title);
+        }
+        counts[o.title]++;
+      }
+    });
+    return order.map(s => [s, counts[s]]);
   }
 
   function buildSeriesFilter() {
@@ -2115,7 +2132,7 @@
     const all = window.CHARACTERS || [];
     const seriesOrder = [];
     const seriesSet = new Set();
-    all.forEach(c => {
+    [...all].reverse().forEach(c => {
       if (c.series && !seriesSet.has(c.series)) {
         seriesOrder.push(c.series);
         seriesSet.add(c.series);
