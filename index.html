@@ -1368,6 +1368,11 @@
         <div class="di-icon">📈</div>
         <span>Stats</span>
       </div>
+      <div class="drawer-section-label" style="margin-top:8px">Community</div>
+      <a href="https://discord.gg/v8rEkPRdE" target="_blank" class="drawer-item" style="text-decoration:none">
+        <div class="di-icon">👾</div>
+        <span>Join Discord</span>
+      </a>
       <div class="drawer-section-label" style="margin-top:8px">Tools</div>
       <div class="drawer-item" data-tab="mod">
         <div class="di-icon">🔧</div>
@@ -1635,13 +1640,18 @@
       </div>
     </div>
 
-    <div class="stats-group">
-      <div class="stats-group-header">💡 Suggest a Character</div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <input class="nickname-input" id="suggest-char-name" type="text" placeholder="Character name" maxlength="50">
-        <input class="nickname-input" id="suggest-char-series" type="text" placeholder="Series/Show name" maxlength="50">
-        <textarea class="nickname-input" id="suggest-char-quote" placeholder="Quote (optional)" maxlength="200" style="resize:vertical;min-height:60px;font-family:'Outfit',sans-serif;padding:8px;"></textarea>
-        <button class="nickname-save-btn" id="suggest-submit-btn" style="width:100%;">Submit Suggestion</button>
+    <div class="stats-group" style="background: linear-gradient(135deg, rgba(88,101,242,0.1), rgba(88,101,242,0.05)); border: 1px solid rgba(88,101,242,0.2);">
+      <div class="stats-group-header" style="color: #5865F2;">👾 Join our Discord</div>
+      <div style="display:flex;flex-direction:column;gap:12px;text-align:center;padding:10px 0;">
+        <div style="font-size:0.85rem; color:var(--muted); line-height:1.5;">
+          Have a character suggestion? Found a bug? Or just want to hang out with the community? Join our Discord server!
+        </div>
+        <a href="https://discord.gg/v8rEkPRdE" target="_blank" 
+           style="display:block; width:100%; padding:12px; background:#5865F2; color:white; border-radius:12px; text-decoration:none; font-weight:700; font-size:0.95rem; transition:transform 0.2s, background 0.2s; box-shadow: 0 4px 15px rgba(88,101,242,0.3);"
+           onmouseover="this.style.transform='translateY(-2px)';this.style.background='#4752C4';"
+           onmouseout="this.style.transform='translateY(0)';this.style.background='#5865F2';">
+          Connect to Discord
+        </a>
       </div>
     </div>
 
@@ -1977,14 +1987,7 @@
 
     </div>
 
-    <div class="mod-tab-panel" id="modtab-suggestions">
-      <div style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;line-height:1.6;">
-        Users can submit character and quote suggestions directly from the game. View all suggestions below:
-      </div>
-      <div id="suggestions-list" style="display:flex;flex-direction:column;gap:12px;">
-        <div style="text-align:center;color:var(--muted);padding:20px;font-size:0.85rem;">Loading suggestions...</div>
-      </div>
-    </div>
+<!-- Suggestions tab removed -->
 
     </div> </div>
   <script>
@@ -2075,7 +2078,7 @@
       activeLabel.textContent = SECTION_NAMES[t] || t;
       if (t === 'tierlist') { renderTierList(); renderTLSlots(); }
       if (t === 'quiz') { if (!quizReady) { quizReady = true; initQuiz(); } }
-      if (t === 'stats') { renderStats(); initSuggestionButton(); }
+      if (t === 'stats') { renderStats(); }
       if (t === 'mod') initModPanel();
       if (t === 'oped') { if (!opedReady) { opedReady = true; initOpedGame(); } }
       closeDrawer();
@@ -3103,135 +3106,7 @@
     loadGlobalLeaderboard();
   }
 
-  // ═══════════════════════════════════════════════════
-  //  CHARACTER SUGGESTIONS (Firebase)
-  // ═══════════════════════════════════════════════════
-  async function submitSuggestion() {
-    const charName = document.getElementById('suggest-char-name')?.value.trim();
-    const series = document.getElementById('suggest-char-series')?.value.trim();
-    const quote = document.getElementById('suggest-char-quote')?.value.trim();
-    const btn = document.getElementById('suggest-submit-btn');
-
-    if (!charName) {
-      alert('Please enter a character name.');
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = '⏳ Submitting...';
-    try {
-      // Check if Firebase is available
-      if (!window.db || !firebase || !firebase.firestore) {
-        throw new Error("Firebase not initialized");
-      }
-
-      const suggestionData = {
-        characterName: charName,
-        series: series || 'Unknown',
-        quote: quote || '',
-        userNickname: loadNickname(),
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
-      const result = await window.db.collection('suggestions').add(suggestionData);
-      console.log('Suggestion submitted successfully:', result.id);
-      alert('🎉 Suggestion submitted! Thank you for helping improve PixelWho!');
-      document.getElementById('suggest-char-name').value = '';
-      document.getElementById('suggest-char-series').value = '';
-      document.getElementById('suggest-char-quote').value = '';
-    } catch(e) {
-      console.error('Failed to submit suggestion:', e);
-      // Fallback: Save to localStorage
-      try {
-        const suggestions = JSON.parse(localStorage.getItem('whosdat-suggestions') || '[]');
-        suggestions.push({
-          characterName: charName,
-          series: series || 'Unknown',
-          quote: quote || '',
-          userNickname: loadNickname(),
-          timestamp: new Date().toISOString(),
-          error: e.message || e.code || 'Unknown'
-        });
-        localStorage.setItem('whosdat-suggestions', JSON.stringify(suggestions));
-        alert('🎉 Saved locally! (Firebase Error: ' + (e.message || e.code || 'Unknown') + ')');
-        document.getElementById('suggest-char-name').value = '';
-        document.getElementById('suggest-char-series').value = '';
-        document.getElementById('suggest-char-quote').value = '';
-      } catch(localErr) {
-        alert('Error submitting suggestion. Please try again.');
-      }
-    }
-    btn.disabled = false;
-    btn.textContent = 'Submit Suggestion';
-  }
-
-  async function loadSuggestions() {
-    const database = window.db || db;
-    if (!database) {
-      console.warn("Firestore not initialized for loading suggestions.");
-      return;
-    }
-    try {
-      console.log("Loading suggestions from Firestore...");
-      const snapshot = await database.collection('suggestions').orderBy('timestamp', 'desc').get();
-      const list = document.getElementById('suggestions-list');
-      if (!list) return;
-
-      if (snapshot.empty) {
-        list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:0.85rem;">No suggestions yet.</div>';
-        return;
-      }
-
-      list.innerHTML = snapshot.docs.map(doc => {
-        const data = doc.data();
-        let date = 'Unknown';
-        try {
-          if (data.timestamp && data.timestamp.toDate) {
-            date = data.timestamp.toDate().toLocaleString();
-          } else if (data.timestamp) {
-            date = new Date(data.timestamp).toLocaleString();
-          }
-        } catch(dateErr) {}
-
-        return `
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;">
-            <div style="display:flex;justify-content:space-between;align-items:start;gap:8px;">
-              <div style="flex:1">
-                <div style="font-weight:600;color:var(--text);font-size:0.95rem;">${data.characterName || 'Unknown'}</div>
-                <div style="font-size:0.8rem;color:var(--muted);">${data.series || 'No Series'}</div>
-                ${data.quote ? `<div style="font-size:0.8rem;color:var(--accent);font-style:italic;margin-top:4px;">“${data.quote}”</div>` : ''}
-                <div style="font-size:0.65rem;color:var(--muted);margin-top:8px;opacity:0.7;">
-                  By: ${data.userNickname || 'Anonymous'} • ${date}
-                </div>
-              </div>
-              <button onclick="if(confirm('Delete this suggestion?')) window.db.collection('suggestions').doc('${doc.id}').delete().then(() => loadSuggestions());" 
-                      style="padding:6px 10px;background:rgba(242,95,76,0.1);border:1px solid rgba(242,95,76,0.2);border-radius:8px;color:var(--wrong);font-size:0.7rem;font-weight:600;cursor:pointer;transition:all 0.2s;">
-                Delete
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-      console.log(`Loaded ${snapshot.size} suggestions.`);
-    } catch(e) {
-      console.error('Failed to load suggestions:', e);
-      const list = document.getElementById('suggestions-list');
-      if (list) list.innerHTML = `<div style="color:var(--wrong);padding:20px;font-size:0.8rem;">Error loading suggestions: ${e.message}</div>`;
-    }
-  }
-
-  // Attach suggestion submission to button if it exists
-  function initSuggestionButton() {
-    const suggestBtn = document.getElementById('suggest-submit-btn');
-    if (suggestBtn) {
-      // Use a named function to avoid duplicate listeners if called multiple times
-      suggestBtn.onclick = (e) => {
-        e.preventDefault();
-        submitSuggestion();
-      };
-    }
-  }
-  initSuggestionButton();
+  // Suggestion box logic removed. Redirecting community to Discord.
 
   // ═══════════════════════════════════════════════════
   //  TIER LIST EXPORT
@@ -3953,7 +3828,6 @@
       renderEditList();
       renderSeriesLibrary();
       updateSavedBadge();
-      loadSuggestions();
     }
   }
 
