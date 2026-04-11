@@ -2189,6 +2189,21 @@
   }
   function saveDailyResult(obj) { try{localStorage.setItem('whosdat-daily-'+todayStr(),JSON.stringify(obj));}catch(e){} }
 
+  const MILESTONES = {
+    5:   { text: "I SUMMON 'Number 5: Doom Chimera'!", color: '#e67e22', dur: 2000 },
+    10:  { text: '"I am the pinnacle of perfection!"', color: '#27ae60', dur: 2000 },
+    15:  { text: '"I\'ll show you... The Final Getsuga Tensho!"', color: '#e74c3c', dur: 2000 },
+    20:  { text: '20th Century Boy!', color: '#3498db', dur: 2000 },
+    25:  { text: "I SUMMON 'Number 25: Force Focus'!", color: '#f1c40f', dur: 2000 },
+    30:  { text: "I SUMMON 'Number 30: Acid Golem'!", color: '#c0392b', dur: 2000 },
+    35:  { text: "I SUMMON 'Number 35: Ravenous Tarantula'!", color: '#8e44ad', dur: 2000 },
+    40:  { text: '"Open Sesame! 40 Thieves!"', color: '#ffd93d', dur: 2000 },
+    45:  { text: '"45 Degrees! Yohohoho!"', color: '#95a5a6', dur: 2000 },
+    50:  { text: "I SUMMON 'Number 50: Black Ship of Corn'!", color: '#2c3e50', dur: 2200 },
+    100: { text: '"I\'m the protagonist of my own life!"', color: '#8e44ad', dur: 2500 },
+    9000: { text: "IT'S OVER 9000!!!", color: '#f1c40f', dur: 3000 }
+  };
+
   const CATCHPHRASES = [
     { text:'ゴゴゴゴゴゴゴ',        color:'#9b59b6', cls:'menacing', dur:2200 },
     { text:'KONO DIO DA!',         color:'#c0392b', dur:1800 },
@@ -2212,11 +2227,9 @@
     { text:'REQUIEM!',             color:'#6c5ce7', dur:1800 },
   ];
 
-  const EASTER_9000 = { text:"IT'S OVER 9000!!!", color:'#f1c40f', dur:3000 };
-
   let milestoneTimer = null;
   function showMilestone(n, override) {
-    const entry = override || CATCHPHRASES[Math.floor(Math.random()*CATCHPHRASES.length)];
+    const entry = override || MILESTONES[n] || CATCHPHRASES[Math.floor(Math.random()*CATCHPHRASES.length)];
     const el = document.getElementById('milestone-text');
     const ov = document.getElementById('milestone-overlay');
     el.textContent = '🔥 ' + n + ' · ' + entry.text;
