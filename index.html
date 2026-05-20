@@ -2701,6 +2701,10 @@
             <div class="mod-label">Images <span class="opt">— random one shown each round</span></div>
             <div id="edit-images-list"></div>
             <button type="button" class="dyn-add-btn" id="edit-images-add-btn">＋ Add another image</button>
+            <div class="mod-img-preview" id="edit-img-preview">
+              <img id="edit-preview-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="current character preview">
+              <div class="preview-placeholder">Character preview will appear here</div>
+            </div>
           </div>
           <div class="mod-field">
             <div class="mod-label">Quotes <span class="opt">optional — random one shown in quiz</span></div>
@@ -3246,23 +3250,23 @@
       input.placeholder = index === 0
         ? 'https://i.imgur.com/… (primary)'
         : 'https://i.imgur.com/… (alternate)';
-      // When first image input changes, update preview
+      // When first image input changes, update the matching add/edit preview.
       if (index === 0) {
-        const previewImg = document.getElementById('mod-preview-img');
-        const previewWrap = document.getElementById('mod-img-preview');
-        if (previewImg && previewWrap) {
-          input.addEventListener('input', () => {
-            const v = input.value.trim();
-            if (v) {
-              previewImg.onerror = () => previewWrap.classList.remove('has-img');
-              previewImg.onload  = () => previewWrap.classList.add('has-img');
-              previewImg.src = v;
-            } else {
-              previewImg.src = '';
-              previewWrap.classList.remove('has-img');
-            }
-          });
-        }
+        input.addEventListener('input', () => {
+          const v = input.value.trim();
+          const isEdit = container && container.id === 'edit-images-list';
+          if (isEdit) {
+            setEditPreview(v);
+            return;
+          }
+          const previewImg = document.getElementById('mod-preview-img');
+          const previewWrap = document.getElementById('mod-img-preview');
+          if (!previewImg || !previewWrap) return;
+          previewImg.onload = () => previewWrap.classList.add('has-img');
+          previewImg.onerror = () => previewWrap.classList.remove('has-img');
+          if (v) previewImg.src = v;
+          else { previewImg.removeAttribute('src'); previewWrap.classList.remove('has-img'); }
+        });
       }
     } else {
       input.placeholder = index === 0
@@ -3441,9 +3445,30 @@
   // ═══════════════════════════════════════════════════
   let streak=0, guessesLeft=5, currentChar=null, gameState='playing', pool=[], acIndex=-1;
   let blurMode = false, dailyMode = false, hintUsed = false, cropMode = false;
-  let cropFocalX = 50, cropFocalY = 50; // random focal point for current crop round
+  let cropRect = { x: 0, y: 0, size: 16 };
   const BLUR_START = 20, BLUR_STEP = 4;
-  const CROP_INSETS = [42, 35, 28, 21, 14, 7];
+  const CROP_SIZES = [18, 30, 44, 58, 72, 86, 100];
+
+  function chooseCropRect(img) {
+    const narrow = img.naturalWidth && img.naturalHeight && img.naturalWidth < img.naturalHeight * 0.72;
+    const startSize = narrow ? 24 : CROP_SIZES[0];
+    return {
+      size: startSize,
+      x: Math.random() * Math.max(0, 100 - startSize),
+      y: Math.random() * Math.max(0, 100 - startSize)
+    };
+  }
+
+  function applyCropStep(step) {
+    const size = Math.min(100, CROP_SIZES[Math.min(step, CROP_SIZES.length - 1)] || 100);
+    const cx = cropRect.x + cropRect.size / 2;
+    const cy = cropRect.y + cropRect.size / 2;
+    const left = Math.max(0, Math.min(100 - size, cx - size / 2));
+    const top = Math.max(0, Math.min(100 - size, cy - size / 2));
+    const right = Math.max(0, 100 - left - size);
+    const bottom = Math.max(0, 100 - top - size);
+    charImg.style.clipPath = `inset(${top.toFixed(2)}% ${right.toFixed(2)}% ${bottom.toFixed(2)}% ${left.toFixed(2)}% round 6px)`;
+  }
 
   // ── Streak shield (protection token) ───────────────
   const SHIELD_KEY = 'pixelwho-shield-v1';
@@ -3919,7 +3944,7 @@
     hintReveal.className=''; hintReveal.innerHTML='';
     dailyComp.className='';
     loadCover.style.display='flex'; charImg.style.opacity='0';
-    charImg.style.filter=''; charImg.style.clipPath=''; charImg.style.objectPosition='';
+    charImg.style.filter=''; charImg.style.clipPath=''; charImg.style.objectPosition=''; charImg.style.objectFit='cover';
     charImg.classList.remove('crop-mode');
     // Reset initials hint
     initialsHint.className=''; initialsHint.innerHTML='<div class="initial-hint-label">Name initials</div>';
@@ -3959,16 +3984,15 @@
         charImg.src = img.src;
         loadCover.style.display='none';
         charImg.style.opacity='1';
-        if(blurMode) { charImg.style.filter='blur('+BLUR_START+'px)'; charImg.style.clipPath=''; }
+        if(blurMode) { charImg.style.filter='blur('+BLUR_START+'px)'; charImg.style.clipPath=''; charImg.style.objectFit='cover'; }
         else if(cropMode) {
           charImg.classList.add('crop-mode');
           charImg.style.filter='';
-          // Pick a random focal point (biased toward the upper half for portrait images)
-          cropFocalX = 20 + Math.floor(Math.random() * 60); // 20–80%
-          cropFocalY = 10 + Math.floor(Math.random() * 65); // 10–75%
-          charImg.style.objectPosition = cropFocalX + '% ' + cropFocalY + '%';
-          charImg.style.clipPath='inset('+CROP_INSETS[0]+'% round 6px)';
-        } else { charImg.style.filter=''; charImg.style.clipPath=''; charImg.style.objectPosition=''; }
+          charImg.style.objectFit='cover';
+          charImg.style.objectPosition='center center';
+          cropRect = chooseCropRect(img);
+          applyCropStep(0);
+        } else { charImg.style.filter=''; charImg.style.clipPath=''; charImg.style.objectPosition=''; charImg.style.objectFit='cover'; }
     };
     img.onerror = () => {
         loadCover.style.display='none';
@@ -4149,7 +4173,7 @@
 
   function win(){
     gameState='correct'; streak++;
-    charImg.style.filter=''; charImg.style.clipPath=''; charImg.style.objectPosition=''; charImg.classList.remove('crop-mode');
+    charImg.style.filter=''; charImg.style.clipPath=''; charImg.style.objectPosition=''; charImg.style.objectFit='cover'; charImg.classList.remove('crop-mode');
     setStreak(streak); gInput.disabled=true; gInput.classList.add('flash-correct');
     resName.textContent=currentChar.name; resSeries.textContent=currentChar.series || ''; resOverlay.className='result-overlay correct';
     hintBtn.style.display='none'; initialsHint.className=''; streakShield.classList.remove('show');
@@ -4166,7 +4190,7 @@
     const wrongCount = maxGuesses - guessesLeft;
     dots[wrongCount].classList.add('used'); guessesLeft--;
     if(blurMode){ const b=Math.max(0,BLUR_START-(maxGuesses-guessesLeft)*BLUR_STEP); charImg.style.filter='blur('+b+'px)'; }
-    else if(cropMode){ const idx=Math.min(maxGuesses-guessesLeft,CROP_INSETS.length-1); charImg.style.clipPath='inset('+CROP_INSETS[idx]+'% round 6px)'; }
+    else if(cropMode){ applyCropStep(maxGuesses - guessesLeft); }
     const tag=document.createElement('div'); tag.className='wrong-tag'; tag.textContent=text; wrongTags.appendChild(tag);
     gInput.classList.remove('shake'); void gInput.offsetWidth; gInput.classList.add('shake');
     // Show initials after 3 wrong guesses (free, no streak cost)
@@ -4191,7 +4215,7 @@
       setTimeout(() => toast.remove(), 2800);
       // Don't reset streak — just mark game as failed visually
       gameState='failed'; gInput.disabled=true;
-      charImg.style.filter=''; charImg.style.clipPath=''; charImg.style.objectPosition=''; charImg.classList.remove('crop-mode');
+      charImg.style.filter=''; charImg.style.clipPath=''; charImg.style.objectPosition=''; charImg.style.objectFit='cover'; charImg.classList.remove('crop-mode');
       resName.textContent=currentChar.name; resSeries.textContent=currentChar.series || ''; resOverlay.className='result-overlay failed';
       ansReveal.innerHTML='The answer was <strong>'+currentChar.name+'</strong>';
       ansReveal.className='show';
@@ -4203,7 +4227,7 @@
       return;
     }
     gameState='failed'; streak=0; setStreak(0); gInput.disabled=true;
-    charImg.style.filter=''; charImg.style.clipPath=''; charImg.style.objectPosition=''; charImg.classList.remove('crop-mode');
+    charImg.style.filter=''; charImg.style.clipPath=''; charImg.style.objectPosition=''; charImg.style.objectFit='cover'; charImg.classList.remove('crop-mode');
     resName.textContent=currentChar.name; resSeries.textContent=currentChar.series || ''; resOverlay.className='result-overlay failed';
     ansReveal.innerHTML='The answer was <strong>'+currentChar.name+'</strong>';
     ansReveal.className='show';
@@ -5200,6 +5224,17 @@
   const modPreviewWrap = document.getElementById('mod-img-preview');
   const modPreviewImg = document.getElementById('mod-preview-img');
   const modImgDlBtn   = document.getElementById('mod-img-dl-btn');
+  const editPreviewWrap = document.getElementById('edit-img-preview');
+  const editPreviewImg = document.getElementById('edit-preview-img');
+
+  function setEditPreview(url) {
+    if (!editPreviewWrap || !editPreviewImg) return;
+    const v = (url || '').trim();
+    editPreviewImg.onload = () => editPreviewWrap.classList.add('has-img');
+    editPreviewImg.onerror = () => editPreviewWrap.classList.remove('has-img');
+    if (v) editPreviewImg.src = v;
+    else { editPreviewImg.removeAttribute('src'); editPreviewWrap.classList.remove('has-img'); }
+  }
 
   // Helper: get the first image input in the add form's dynamic list
   function getModPrimaryImageInput() {
@@ -5918,7 +5953,9 @@
     document.getElementById('edit-form-title').textContent = 'Editing: ' + c.name;
     document.getElementById('edit-name').value   = c.name   || '';
     document.getElementById('edit-series').value = c.series || '';
-    buildDynList('edit-images-list', getCharImages(c).length ? getCharImages(c) : [''], 'image');
+    const editImages = getCharImages(c);
+    buildDynList('edit-images-list', editImages.length ? editImages : [''], 'image');
+    setEditPreview(editImages[0] || '');
     buildDynList('edit-quotes-list', getCharQuotes(c).length ? getCharQuotes(c) : ['', '', ''], 'quote');
     setDiffInGroup('edit-diff-group', c.difficulty || 'standard');
     document.getElementById('edit-code-wrap').classList.remove('show');
@@ -5931,6 +5968,7 @@
     editingChar = null;
     document.getElementById('edit-form-container').style.display = 'none';
     document.getElementById('edit-code-wrap').classList.remove('show');
+    setEditPreview('');
   }
 
   document.getElementById('edit-form-close').addEventListener('click', closeEditForm);
@@ -5987,6 +6025,7 @@
       document.getElementById('edit-code-wrap').classList.add('show');
       renderEditList(document.getElementById('edit-search').value);
       document.getElementById('edit-form-title').textContent = 'Editing: ' + newName;
+      setEditPreview(newImages[0] || '');
 
       // Visual feedback
       const saveBtn = document.getElementById('edit-save-btn');
