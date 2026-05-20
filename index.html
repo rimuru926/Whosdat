@@ -244,6 +244,60 @@
     }
     .gmode-btn.active { background: var(--surface2); color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
 
+    .difficulty-toggle {
+      width: 100%; display: flex; align-items: center;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 4px; gap: 4px;
+    }
+    .diff-label {
+      font-size: 0.75rem; font-weight: 700; color: var(--muted);
+      padding: 0 8px; white-space: nowrap; letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .diff-btn {
+      flex: 1; padding: 8px 10px;
+      background: transparent; border: none; border-radius: 9px;
+      color: var(--muted); font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .diff-btn.active[data-diff="standard"] {
+      background: var(--surface2); color: #4ade80;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .diff-btn.active[data-diff="hardcore"] {
+      background: var(--surface2); color: #f25f4c;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    /* difficulty select in mod forms */
+    .diff-select-row {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .diff-select-row label {
+      font-size: 0.8rem; color: var(--muted); font-weight: 600;
+      white-space: nowrap;
+    }
+    .diff-radio-group {
+      display: flex; gap: 6px; flex: 1;
+    }
+    .diff-radio-btn {
+      flex: 1; padding: 7px 8px;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 8px; color: var(--muted);
+      font-family: 'Outfit', sans-serif; font-size: 0.8rem;
+      font-weight: 600; cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+      text-align: center;
+    }
+    .diff-radio-btn.active[data-diff="standard"] {
+      background: rgba(74,222,128,0.12); color: #4ade80;
+      border-color: #4ade80;
+    }
+    .diff-radio-btn.active[data-diff="hardcore"] {
+      background: rgba(242,95,76,0.12); color: #f25f4c;
+      border-color: #f25f4c;
+    }
+
     .char-card {
       width: 100%; max-width: 300px; aspect-ratio: 3/4;
       border-radius: 18px; overflow: hidden; position: relative;
@@ -828,6 +882,28 @@
     .mod-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,137,6,0.12); }
     .mod-input::placeholder { color: var(--muted); font-weight: 400; }
     .mod-input.error { border-color: var(--wrong); box-shadow: 0 0 0 3px rgba(242,95,76,0.12); }
+
+    /* Dynamic multi-field rows (images / quotes) */
+    .dyn-field-row {
+      display: flex; gap: 6px; align-items: center; margin-bottom: 6px;
+    }
+    .dyn-field-row .mod-input { flex: 1; min-width: 0; }
+    .dyn-remove-btn {
+      flex-shrink: 0; width: 32px; height: 38px;
+      background: rgba(242,95,76,0.10); border: 1.5px solid rgba(242,95,76,0.25);
+      border-radius: 8px; color: var(--wrong); font-size: 1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .dyn-remove-btn:hover { background: rgba(242,95,76,0.22); }
+    .dyn-add-btn {
+      background: rgba(255,137,6,0.08); border: 1.5px dashed rgba(255,137,6,0.35);
+      border-radius: 8px; color: var(--accent); font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      padding: 7px 12px; width: 100%; text-align: center;
+      transition: background 0.15s; margin-top: 2px;
+    }
+    .dyn-add-btn:hover { background: rgba(255,137,6,0.15); }
 
     /* Image preview */
     .mod-img-preview {
@@ -1677,6 +1753,205 @@
           linear-gradient(to left,  rgba(255,137,6,0.06) 0%, transparent 20%);
       }
     }
+
+    /* ── Kiss Marry Kill ────────────────────────────── */
+    .kmk-wrap {
+      width: 100%; max-width: 680px;
+      padding: 16px 20px 48px;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    .kmk-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem; letter-spacing: 0.08em;
+      color: var(--accent); text-align: center;
+    }
+    .kmk-subtitle {
+      font-size: 0.85rem; color: var(--muted);
+      text-align: center; min-height: 1.2em;
+    }
+    .kmk-cards {
+      display: flex; gap: 12px; width: 100%;
+      justify-content: center; flex-wrap: wrap;
+    }
+    .kmk-card {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 8px; width: calc(33% - 8px); min-width: 100px; max-width: 160px;
+    }
+    .kmk-img-wrap {
+      width: 100%; aspect-ratio: 3/4;
+      border-radius: 14px; overflow: hidden;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      position: relative; transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .kmk-img-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .kmk-img-wrap.assigned-kiss  { border-color: #f472b6; box-shadow: 0 0 14px rgba(244,114,182,0.35); }
+    .kmk-img-wrap.assigned-marry { border-color: #4ade80; box-shadow: 0 0 14px rgba(74,222,128,0.35); }
+    .kmk-img-wrap.assigned-kill  { border-color: #f25f4c; box-shadow: 0 0 14px rgba(242,95,76,0.35); }
+    .kmk-role-badge {
+      position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+      font-size: 1.3rem; opacity: 0; transition: opacity 0.2s;
+      pointer-events: none;
+    }
+    .kmk-img-wrap.assigned-kiss  .kmk-role-badge,
+    .kmk-img-wrap.assigned-marry .kmk-role-badge,
+    .kmk-img-wrap.assigned-kill  .kmk-role-badge { opacity: 1; }
+    .kmk-char-name {
+      font-size: 0.75rem; font-weight: 700;
+      color: var(--text); text-align: center;
+      line-height: 1.2; max-width: 100%;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .kmk-char-series {
+      font-size: 0.65rem; color: var(--muted); text-align: center;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      max-width: 100%;
+    }
+    .kmk-role-btns {
+      display: flex; flex-direction: column; gap: 5px; width: 100%;
+    }
+    .kmk-role-btn {
+      width: 100%; padding: 6px 4px;
+      border-radius: 8px; border: 1.5px solid var(--border);
+      background: var(--surface); color: var(--muted);
+      font-family: 'Outfit', sans-serif; font-size: 0.72rem;
+      font-weight: 700; cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      text-align: center;
+    }
+    .kmk-role-btn[data-role="kiss"].selected  { background: rgba(244,114,182,0.15); color: #f472b6; border-color: #f472b6; }
+    .kmk-role-btn[data-role="marry"].selected { background: rgba(74,222,128,0.15);  color: #4ade80; border-color: #4ade80; }
+    .kmk-role-btn[data-role="kill"].selected  { background: rgba(242,95,76,0.15);   color: #f25f4c; border-color: #f25f4c; }
+    .kmk-role-btn.taken { opacity: 0.28; cursor: default; pointer-events: none; }
+    .kmk-btn-row {
+      display: flex; gap: 10px; width: 100%; justify-content: center;
+    }
+    .kmk-next-btn, .kmk-reroll-btn {
+      flex: 1; max-width: 180px; padding: 11px 16px;
+      border-radius: 12px; border: none;
+      font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .kmk-next-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: white;
+    }
+    .kmk-reroll-btn {
+      background: var(--surface2); color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+    .kmk-result {
+      width: 100%; max-width: 460px;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 14px 18px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .kmk-result-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .kmk-result-img {
+      width: 36px; height: 46px; border-radius: 6px;
+      object-fit: cover; flex-shrink: 0;
+    }
+    .kmk-result-icon { font-size: 1.1rem; flex-shrink: 0; }
+    .kmk-result-name { font-weight: 700; font-size: 0.88rem; color: var(--text); flex: 1; }
+    .kmk-result-series { font-size: 0.72rem; color: var(--muted); }
+    /* ── Random Character Generator ─────────────────── */
+    .rng-wrap {
+      width: 100%; max-width: 680px;
+      padding: 16px 20px 48px;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+    }
+    .rng-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem; letter-spacing: 0.08em;
+      color: var(--accent); text-align: center;
+    }
+    .rng-controls {
+      width: 100%; display: flex; flex-direction: column; gap: 12px;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 16px; padding: 16px;
+    }
+    .rng-count-row {
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .rng-count-label {
+      font-size: 0.8rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .rng-count-btns {
+      display: flex; gap: 6px; flex-wrap: wrap;
+    }
+    .rng-count-btn {
+      width: 38px; height: 38px;
+      border-radius: 10px; border: 1.5px solid var(--border);
+      background: var(--surface2); color: var(--muted);
+      font-family: 'Outfit', sans-serif; font-size: 0.88rem;
+      font-weight: 700; cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .rng-count-btn.active {
+      background: rgba(255,137,6,0.15); color: var(--accent);
+      border-color: var(--accent);
+    }
+    .rng-roll-btn {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; border-radius: 12px; color: white;
+      font-family: 'Outfit', sans-serif; font-size: 1rem;
+      font-weight: 700; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .rng-roll-btn:active { transform: scale(0.97); }
+    .rng-results {
+      width: 100%; display: flex; flex-wrap: wrap;
+      gap: 12px; justify-content: center;
+    }
+    .rng-card {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 8px; width: calc(33% - 8px); min-width: 90px; max-width: 150px;
+      animation: rngPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .rng-card:nth-child(2)  { animation-delay: 0.04s; }
+    .rng-card:nth-child(3)  { animation-delay: 0.08s; }
+    .rng-card:nth-child(4)  { animation-delay: 0.12s; }
+    .rng-card:nth-child(5)  { animation-delay: 0.16s; }
+    .rng-card:nth-child(6)  { animation-delay: 0.20s; }
+    .rng-card:nth-child(7)  { animation-delay: 0.24s; }
+    .rng-card:nth-child(8)  { animation-delay: 0.28s; }
+    .rng-card:nth-child(9)  { animation-delay: 0.32s; }
+    .rng-card:nth-child(10) { animation-delay: 0.36s; }
+    @keyframes rngPop {
+      from { opacity: 0; transform: scale(0.75) translateY(8px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0);    }
+    }
+    .rng-img-wrap {
+      width: 100%; aspect-ratio: 3/4;
+      border-radius: 14px; overflow: hidden;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      transition: border-color 0.2s;
+    }
+    .rng-img-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .rng-char-name {
+      font-size: 0.75rem; font-weight: 700;
+      color: var(--text); text-align: center;
+      line-height: 1.2; max-width: 100%;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .rng-char-series {
+      font-size: 0.65rem; color: var(--muted);
+      text-align: center; max-width: 100%;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .rng-empty {
+      color: var(--muted); font-size: 0.88rem;
+      text-align: center; padding: 32px 0;
+    }
   </style>
 <body>
 
@@ -1709,19 +1984,27 @@
         <div class="di-icon">📈</div>
         <span>Stats</span>
       </div>
+      <div class="drawer-item" data-tab="kmk">
+        <div class="di-icon">💋</div>
+        <span>Kiss Marry Kill</span>
+      </div>
+      <div class="drawer-item" data-tab="random">
+        <div class="di-icon">🎲</div>
+        <span>Random Characters</span>
+      </div>
       <div class="drawer-section-label" style="margin-top:8px">Requests</div>
       <div class="drawer-item" data-tab="wishlist">
         <div class="di-icon">⭐</div>
         <span>Wishlist</span>
       </div>
-      <div class="drawer-section-label" style="margin-top:8px">Tools</div>
-      <div class="drawer-item" data-tab="mod">
-        <div class="di-icon">🔧</div>
-        <span>Mod Panel</span>
-      </div>
+      <div class="drawer-section-label" style="margin-top:8px">Settings</div>
       <div class="drawer-item" data-tab="themes">
         <div class="di-icon">🎨</div>
         <span>Themes</span>
+      </div>
+      <div class="drawer-item" data-tab="mod" id="mod-drawer-item" style="display:none">
+        <div class="di-icon">🔧</div>
+        <span>Mod Panel</span>
       </div>
     </nav>
   </div>
@@ -1761,6 +2044,11 @@
       <button class="gmode-btn" data-gmode="blur">🌫️ Blur</button>
       <button class="gmode-btn" data-gmode="crop">🔍 Crop</button>
       <button class="gmode-btn" data-gmode="daily">📅 Daily</button>
+    </div>
+    <div class="difficulty-toggle">
+      <span class="diff-label">Pool</span>
+      <button class="diff-btn active" data-diff="standard">⚡ Standard</button>
+      <button class="diff-btn" data-diff="hardcore">💀 Hardcore</button>
     </div>
     <div class="char-card" id="char-card">
       <img id="char-img" src="" alt="Guess this character">
@@ -1814,6 +2102,44 @@
     </div>
   </div>
 
+
+  <div id="kmk-section" class="section">
+    <div class="kmk-wrap">
+      <div class="kmk-title">💋 Kiss · 💍 Marry · 💀 Kill</div>
+      <div class="kmk-subtitle" id="kmk-subtitle">Pick one role for each character</div>
+      <div class="kmk-cards" id="kmk-cards"></div>
+      <div class="kmk-btn-row">
+        <button class="kmk-next-btn" id="kmk-next-btn" style="display:none">🔀 Next Round</button>
+        <button class="kmk-reroll-btn" id="kmk-reroll-btn">🎲 Reroll</button>
+      </div>
+      <div class="kmk-result" id="kmk-result" style="display:none"></div>
+    </div>
+  </div>
+
+  <div id="random-section" class="section">
+    <div class="rng-wrap">
+      <div class="rng-title">🎲 Random Characters</div>
+      <div class="rng-controls">
+        <div class="rng-count-row">
+          <span class="rng-count-label">How many?</span>
+          <div class="rng-count-btns" id="rng-count-btns">
+            <button class="rng-count-btn active" data-n="1">1</button>
+            <button class="rng-count-btn" data-n="2">2</button>
+            <button class="rng-count-btn" data-n="3">3</button>
+            <button class="rng-count-btn" data-n="4">4</button>
+            <button class="rng-count-btn" data-n="5">5</button>
+            <button class="rng-count-btn" data-n="6">6</button>
+            <button class="rng-count-btn" data-n="7">7</button>
+            <button class="rng-count-btn" data-n="8">8</button>
+            <button class="rng-count-btn" data-n="9">9</button>
+            <button class="rng-count-btn" data-n="10">10</button>
+          </div>
+        </div>
+        <button class="rng-roll-btn" id="rng-roll-btn">🎲 Roll</button>
+      </div>
+      <div class="rng-results" id="rng-results"></div>
+    </div>
+  </div>
 
   <div id="themes-section" class="section">
     <div style="width:100%;max-width:700px;padding:0 20px 48px;">
@@ -2274,12 +2600,9 @@
         </div>
 
         <div class="mod-field">
-          <div class="mod-label">Image <span class="req">REQUIRED</span></div>
-          <div class="mod-img-input-row">
-            <input class="mod-input" id="mod-image" type="text" placeholder="https://… or images/zoro.jpg" autocorrect="off" autocomplete="off" spellcheck="false">
-            <button class="mod-upload-btn" id="mod-upload-btn" title="Upload from device">📁 Upload</button>
-            <input type="file" id="mod-file-input" accept="image/*" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;z-index:-1" tabindex="-1">
-          </div>
+          <div class="mod-label">Images <span class="req">REQUIRED</span> <span class="opt">— random one shown each round</span></div>
+          <div id="mod-images-list"></div>
+          <button class="dyn-add-btn" id="mod-images-add-btn">＋ Add another image</button>
           <button class="mod-img-dl-btn" id="mod-img-dl-btn">⬇ Save image to device</button>
           <div class="mod-img-preview" id="mod-img-preview">
             <img id="mod-preview-img" src="" alt="preview">
@@ -2288,18 +2611,19 @@
         </div>
 
         <div class="mod-field">
-          <div class="mod-label">Quote 1 <span class="opt">optional</span></div>
-          <input class="mod-input" id="mod-q1" type="text" placeholder="Their most iconic line (leave blank if unknown/mute)" autocorrect="off">
+          <div class="mod-label">Quotes <span class="opt">optional — random one shown in quiz</span></div>
+          <div id="mod-quotes-list"></div>
+          <button class="dyn-add-btn" id="mod-quotes-add-btn">＋ Add another quote</button>
         </div>
 
         <div class="mod-field">
-          <div class="mod-label">Quote 2 <span class="opt">optional</span></div>
-          <input class="mod-input" id="mod-q2" type="text" placeholder="Second quote" autocorrect="off">
-        </div>
-
-        <div class="mod-field">
-          <div class="mod-label">Quote 3 <span class="opt">optional</span></div>
-          <input class="mod-input" id="mod-q3" type="text" placeholder="Third quote" autocorrect="off">
+          <div class="mod-label">Difficulty</div>
+          <div class="diff-select-row">
+            <div class="diff-radio-group" id="mod-diff-group">
+              <button class="diff-radio-btn active" data-diff="standard">⚡ Standard</button>
+              <button class="diff-radio-btn" data-diff="hardcore">💀 Hardcore</button>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -2373,20 +2697,24 @@
             </div>
           </div>
           <div class="mod-field">
-            <div class="mod-label">Image URL or path</div>
-            <input class="mod-input" id="edit-image" type="text" autocorrect="off" spellcheck="false">
+            <div class="mod-label">Images <span class="opt">— random one shown each round</span></div>
+            <div id="edit-images-list"></div>
+            <button class="dyn-add-btn" id="edit-images-add-btn">＋ Add another image</button>
           </div>
           <div class="mod-field">
-            <div class="mod-label">Quote 1 <span class="opt">optional</span></div>
-            <input class="mod-input" id="edit-q1" type="text" autocorrect="off">
+            <div class="mod-label">Quotes <span class="opt">optional — random one shown in quiz</span></div>
+            <div id="edit-quotes-list"></div>
+            <button class="dyn-add-btn" id="edit-quotes-add-btn">＋ Add another quote</button>
           </div>
+
           <div class="mod-field">
-            <div class="mod-label">Quote 2 <span class="opt">optional</span></div>
-            <input class="mod-input" id="edit-q2" type="text" autocorrect="off">
-          </div>
-          <div class="mod-field">
-            <div class="mod-label">Quote 3 <span class="opt">optional</span></div>
-            <input class="mod-input" id="edit-q3" type="text" autocorrect="off">
+            <div class="mod-label">Difficulty</div>
+            <div class="diff-select-row">
+              <div class="diff-radio-group" id="edit-diff-group">
+                <button class="diff-radio-btn active" data-diff="standard">⚡ Standard</button>
+                <button class="diff-radio-btn" data-diff="hardcore">💀 Hardcore</button>
+              </div>
+            </div>
           </div>
 
           <button class="edit-save-btn" id="edit-save-btn">💾 Save Changes + Generate Code</button>
@@ -2707,7 +3035,7 @@
     try {
       const saved = JSON.parse(localStorage.getItem('whosdat-saved-chars') || '[]');
       saved.forEach(c => {
-        if (c && c.name && c.image && !CHARACTERS.find(x => x.name === c.name)) {
+        if (c && c.name && (c.image || (c.images && c.images.length)) && !CHARACTERS.find(x => x.name === c.name)) {
           CHARACTERS.push(c);
         }
       });
@@ -2735,7 +3063,7 @@
   const drawerOverlay = document.getElementById('drawer-overlay');
   const activeLabel   = document.getElementById('active-label');
 
-  const SECTION_NAMES = { game: 'Image Game', tierlist: 'Tier List', quiz: 'Quote Quiz', oped: 'OP/ED Quiz', stats: 'Stats', mod: 'Mod Panel', wishlist: 'Wishlist', themes: 'Themes' };
+  const SECTION_NAMES = { game: 'Image Game', tierlist: 'Tier List', quiz: 'Quote Quiz', oped: 'OP/ED Quiz', stats: 'Stats', kmk: 'Kiss Marry Kill', random: 'Random Characters', mod: 'Mod Panel', wishlist: 'Wishlist', themes: 'Themes' };
 
   function openDrawer() {
     drawer.classList.add('open');
@@ -2766,24 +3094,228 @@
       activeLabel.textContent = SECTION_NAMES[t] || t;
       
       if (t === 'tierlist') { renderTierList(); renderTLSlots(); }
-      if (t === 'quiz') { if (!quizReady) { quizReady = true; initQuiz(); } }
-      if (t === 'stats') { renderStats(); }
-      if (t === 'mod') initModPanel();
-      if (t === 'oped') { 
+      if (t === 'quiz')     { if (!quizReady) { quizReady = true; initQuiz(); } else { quizStreak=0; bumpQuizStreak(0); quizPool=[...quizEntries()].sort(()=>Math.random()-0.5); loadQuizNext(); } }
+      if (t === 'stats')    { renderStats(); }
+      if (t === 'mod')      { initModPanel(); }
+      if (t === 'oped')     { 
         if (!opedReady) { opedReady = true; initOpedGame(); }
         setTimeout(renderOpedSeriesChips, 100);
       }
-      if (t === 'themes') { updateThemePickerActive(); }
+      if (t === 'themes')   { updateThemePickerActive(); }
       if (t === 'wishlist') { fetchWishlist(); }
-      
+      if (t === 'kmk')      { setTimeout(() => { if (window._kmkReset) window._kmkReset(true); }, 60); }
+      if (t === 'random')   { if (window._rngInit) window._rngInit(); }
+
+      // Secret sequence: quiz → tierlist → quiz → themes → tierlist
+      modSeq.push(t);
+      if (modSeq.length > MOD_SEQ.length) modSeq.shift();
+      if (modSeq.join(',') === MOD_SEQ.join(',')) {
+        revealModPanel();
+      }
+
       closeDrawer();
     });
   });
+
+  // ── Secret mod panel sequence ────────────────────
+  const MOD_SEQ       = ['quiz','tierlist','quiz','themes','tierlist'];
+  const MOD_VIS_KEY   = 'pixelwho-mod-visible-v1';
+  let modSeq          = [];
+
+  function revealModPanel() {
+    const item = document.getElementById('mod-drawer-item');
+    if (!item) return;
+    item.style.display = '';
+    try { localStorage.setItem(MOD_VIS_KEY, '1'); } catch(e) {}
+  }
+
+  // Restore from cache on load
+  try {
+    if (localStorage.getItem(MOD_VIS_KEY) === '1') {
+      const item = document.getElementById('mod-drawer-item');
+      if (item) item.style.display = '';
+    }
+  } catch(e) {}
 
   // ═══════════════════════════════════════════════════
   //  SERIES FILTER & HELPER
   // ═══════════════════════════════════════════════════
   let activeSeriesSet = new Set(); // empty = All
+
+  // ── Difficulty ───────────────────────────────────
+  const DIFFICULTY_KEY = 'pixelwho-difficulty-v1';
+  let activeDifficulty = localStorage.getItem(DIFFICULTY_KEY) || 'standard'; // 'standard' | 'hardcore'
+
+  function saveDifficulty() {
+    try { localStorage.setItem(DIFFICULTY_KEY, activeDifficulty); } catch(e) {}
+  }
+
+  function applyDifficultyUI() {
+    document.querySelectorAll('.diff-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.diff === activeDifficulty);
+    });
+  }
+
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.classList.contains('active')) return;
+      activeDifficulty = btn.dataset.diff;
+      saveDifficulty();
+      applyDifficultyUI();
+      buildSeriesFilter();
+      if (window._kmkReset) window._kmkReset();
+      // Restart game pool with new difficulty
+      streak = 0; setStreak(0); resetPool(); loadNext();
+    });
+  });
+
+  // Helper: wire up a diff-radio-group (add/edit forms)
+  function setupDiffRadioGroup(groupId) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    group.querySelectorAll('.diff-radio-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.diff-radio-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  }
+
+  function getDiffFromGroup(groupId) {
+    const group = document.getElementById(groupId);
+    if (!group) return 'standard';
+    const active = group.querySelector('.diff-radio-btn.active');
+    return active ? active.dataset.diff : 'standard';
+  }
+
+  function setDiffInGroup(groupId, diff) {
+    const group = document.getElementById(groupId);
+    if (!group) return;
+    group.querySelectorAll('.diff-radio-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.diff === diff);
+    });
+  }
+
+  setupDiffRadioGroup('mod-diff-group');
+  setupDiffRadioGroup('edit-diff-group');
+  applyDifficultyUI();
+
+  // ═══════════════════════════════════════════════════
+  //  MULTI-IMAGE / MULTI-QUOTE HELPERS
+  // ═══════════════════════════════════════════════════
+
+  // Normalize old single-field chars to arrays
+  function getCharImages(c) {
+    if (c.images && c.images.length) return c.images.filter(Boolean);
+    return c.image ? [c.image] : [];
+  }
+  function getCharQuotes(c) {
+    if (c.quotes && c.quotes.length) return c.quotes.filter(q => q && q.trim());
+    const q = [c.quote, c.quote2, c.quote3].filter(q => q && q.trim());
+    return q;
+  }
+  // Pick a random image for a character
+  function getCharImage(c) {
+    const imgs = getCharImages(c);
+    if (!imgs.length) return '';
+    return imgs[Math.floor(Math.random() * imgs.length)];
+  }
+
+  // ── Dynamic field list builder ────────────────────
+  // type: 'image' | 'quote'
+  function buildDynList(containerId, values, type) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    const items = values && values.length ? values : [''];
+    items.forEach((val, i) => addDynRow(container, val, type, i));
+  }
+
+  function addDynRow(container, value, type, index) {
+    const row = document.createElement('div');
+    row.className = 'dyn-field-row';
+
+    const input = document.createElement('input');
+    input.className = 'mod-input';
+    input.type = 'text';
+    input.value = value || '';
+    input.autocorrect = 'off';
+    input.spellcheck = false;
+    if (type === 'image') {
+      input.placeholder = index === 0
+        ? 'https://i.imgur.com/… (primary)'
+        : 'https://i.imgur.com/… (alternate)';
+      // When first image input changes, update preview
+      if (index === 0) {
+        const previewImg = document.getElementById('mod-preview-img');
+        const previewWrap = document.getElementById('mod-img-preview');
+        if (previewImg && previewWrap) {
+          input.addEventListener('input', () => {
+            const v = input.value.trim();
+            if (v) {
+              previewImg.onerror = () => previewWrap.classList.remove('has-img');
+              previewImg.onload  = () => previewWrap.classList.add('has-img');
+              previewImg.src = v;
+            } else {
+              previewImg.src = '';
+              previewWrap.classList.remove('has-img');
+            }
+          });
+        }
+      }
+    } else {
+      input.placeholder = index === 0
+        ? 'Their most iconic line (leave blank if unknown/mute)'
+        : 'Another quote…';
+    }
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'dyn-remove-btn';
+    removeBtn.type = 'button';
+    removeBtn.textContent = '✕';
+    removeBtn.title = 'Remove';
+    removeBtn.addEventListener('click', () => {
+      // Keep at least 1 row
+      if (container.children.length > 1) {
+        row.remove();
+      } else {
+        input.value = '';
+      }
+    });
+
+    row.appendChild(input);
+    row.appendChild(removeBtn);
+    container.appendChild(row);
+    return input;
+  }
+
+  function getDynValues(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return [];
+    return Array.from(container.querySelectorAll('input.mod-input'))
+      .map(i => i.value.trim())
+      .filter(Boolean);
+  }
+
+  // Wire up the + buttons
+  function wireAddBtn(btnId, containerId, type) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const container = document.getElementById(containerId);
+      const idx = container.children.length;
+      const input = addDynRow(container, '', type, idx);
+      input.focus();
+    });
+  }
+  wireAddBtn('mod-images-add-btn',  'mod-images-list',  'image');
+  wireAddBtn('mod-quotes-add-btn',  'mod-quotes-list',  'quote');
+  wireAddBtn('edit-images-add-btn', 'edit-images-list', 'image');
+  wireAddBtn('edit-quotes-add-btn', 'edit-quotes-list', 'quote');
+
+  // Init add form with default 1 image row + 3 quote rows
+  buildDynList('mod-images-list', [''], 'image');
+  buildDynList('mod-quotes-list', ['', '', ''], 'quote');
 
   function getKnownSeries() {
     const all = (window.CHARACTERS || []).slice().reverse();
@@ -2816,11 +3348,16 @@
     const all = window.CHARACTERS || [];
     if (!all.some(c => c.series)) { bar.style.display = 'none'; return; }
 
+    // Count only chars visible under the current difficulty
+    const diffPool = activeDifficulty === 'hardcore'
+      ? all
+      : all.filter(c => !c.difficulty || c.difficulty === 'standard');
+
     const countMap = {};
-    all.forEach(c => { if (c.series) countMap[c.series] = (countMap[c.series] || 0) + 1; });
+    diffPool.forEach(c => { if (c.series) countMap[c.series] = (countMap[c.series] || 0) + 1; });
     const series = Object.entries(countMap).sort((a, b) => b[1] - a[1]).map(([s]) => s);
     bar.style.display = '';
-    const totalCount = all.length;
+    const totalCount = diffPool.length;
     const fragment = document.createDocumentFragment();
 
     const searchWrap = document.getElementById('series-search-wrap');
@@ -2847,13 +3384,15 @@
 
     function applyFilter() {
       const activeId = document.querySelector('.section.active')?.id;
-      if (activeId === 'game-section')          { streak=0; setStreak(0); resetPool(); loadNext(); }
+      if      (activeId === 'game-section')     { streak=0; setStreak(0); resetPool(); loadNext(); }
       else if (activeId === 'tierlist-section') renderTierList();
       else if (activeId === 'quiz-section')     { quizStreak=0; bumpQuizStreak(0); quizPool=[...quizEntries()].sort(()=>Math.random()-0.5); loadQuizNext(); }
+      else if (activeId === 'kmk-section')      { if (window._kmkReset) window._kmkReset(); }
+      else if (activeId === 'random-section')   { if (window._rngRoll) window._rngRoll(); }
     }
 
     [{ label: 'All', key: null }, ...series.map(s => ({ label: s, key: s }))].forEach(({label, key}) => {
-      const count = key ? all.filter(c => c.series === key).length : totalCount;
+      const count = key ? diffPool.filter(c => c.series === key).length : totalCount;
       const pill = document.createElement('button');
       const isActive = key ? activeSeriesSet.has(key) : activeSeriesSet.size === 0;
       pill.className = 'series-pill' + (isActive ? ' active' : '');
@@ -2868,6 +3407,7 @@
         }
         saveSeriesFilter();
         buildSeriesFilter();
+        if (window._kmkReset) window._kmkReset();
         if (!isSilent) applyFilter();
       });
       fragment.appendChild(pill);
@@ -2875,7 +3415,7 @@
 
     // Show a "Filtered: N" pill when series are selected
     if (activeSeriesSet.size > 0) {
-      const filtCount = all.filter(c => activeSeriesSet.has(c.series)).length;
+      const filtCount = diffPool.filter(c => activeSeriesSet.has(c.series)).length;
       const countPill = document.createElement('div');
       countPill.className = 'filter-count-pill';
       countPill.textContent = `↳ ${filtCount} character${filtCount !== 1 ? 's' : ''}`;
@@ -2887,8 +3427,12 @@
 
   function filteredChars() {
     const all = window.CHARACTERS || [];
-    if (!activeSeriesSet.size) return all;
-    return all.filter(c => activeSeriesSet.has(c.series));
+    // Hardcore = all chars; Standard = only standard (no difficulty field also counts as standard)
+    const byDiff = activeDifficulty === 'hardcore'
+      ? all
+      : all.filter(c => !c.difficulty || c.difficulty === 'standard');
+    if (!activeSeriesSet.size) return byDiff;
+    return byDiff.filter(c => activeSeriesSet.has(c.series));
   }
 
   // ═══════════════════════════════════════════════════
@@ -3394,9 +3938,9 @@
       [nextChar, pool[swap]] = [pool[swap], nextChar];
     }
     
-    if (nextChar && nextChar.image) {
+    if (nextChar) {
       const preloadImg = new Image();
-      preloadImg.src = nextChar.image;
+      preloadImg.src = getCharImages(nextChar)[0] || '';
     }
 
     clearGameUI();
@@ -3430,7 +3974,7 @@
         charImg.style.opacity='1'; 
         charImg.src='https://placehold.co/400x500/1a1929/ff8906?text='+encodeURIComponent(currentChar.name)+'&font=bebas-neue'; 
     };
-    img.src = currentChar.image;
+    img.src = getCharImage(currentChar);
   }
 
   function loadDailyMode() {
@@ -3900,7 +4444,7 @@
   function buildMiniCard(char, tierId){
     const card=document.createElement('div');
     card.className='mini-card'; card.dataset.name=char.name; card.draggable=true;
-    const img=document.createElement('img'); img.src=char.image; img.alt=char.name; img.loading='lazy';
+    const img=document.createElement('img'); img.src=getCharImages(char)[0]||''; img.alt=char.name; img.loading='lazy';
     img.onerror=()=>{ img.src='https://placehold.co/62x84/221f35/ff8906?text=?'; };
     const nm=document.createElement('div'); nm.className='mini-name'; nm.textContent=char.name;
     card.appendChild(img); card.appendChild(nm);
@@ -3972,14 +4516,14 @@
   let quizReady   = false;
 
   function quizChars() {
-    return filteredChars().filter(c => c.quote && c.quote.trim());
+    return filteredChars().filter(c => getCharQuotes(c).length > 0);
   }
 
   function quizEntries() {
     const entries = [];
     filteredChars().forEach(c => {
-      const quotes = [c.quote, c.quote2, c.quote3].filter(q => q && q.trim());
-      quotes.forEach(q => entries.push({ name: c.name, image: c.image, quote: q }));
+      const quotes = getCharQuotes(c);
+      quotes.forEach(q => entries.push({ name: c.name, image: getCharImage(c), quote: q }));
     });
     return entries;
   }
@@ -4005,7 +4549,7 @@
     }
     quizChar  = quizPool.pop();
     // Preload next character's image in background
-    if (quizPool.length) { const pre = new Image(); pre.src = quizPool[quizPool.length - 1].image; }
+    if (quizPool.length) { const pre = new Image(); pre.src = quizPool[quizPool.length - 1].image || ""; }
     quizState = 'playing';
     const closeHint = document.getElementById('quiz-close-hint');
     if (closeHint) { closeHint.className = ''; closeHint.textContent = ''; }
@@ -4652,26 +5196,19 @@
     if (!e.target.closest('#edit-form-container')) editSeriesAc.classList.remove('open');
   });
 
-  const modImageInput = document.getElementById('mod-image');
   const modPreviewWrap = document.getElementById('mod-img-preview');
   const modPreviewImg = document.getElementById('mod-preview-img');
   const modImgDlBtn   = document.getElementById('mod-img-dl-btn');
 
-  modImageInput.addEventListener('input', () => {
-    const val = modImageInput.value.trim();
-    if (!val) {
-      modPreviewWrap.classList.remove('has-img'); modPreviewImg.src = '';
-      modImgDlBtn.classList.remove('show');
-      return;
-    }
-    modPreviewImg.onload = () => modPreviewWrap.classList.add('has-img');
-    modPreviewImg.onerror = () => modPreviewWrap.classList.remove('has-img');
-    modPreviewImg.src = val;
-    modImgDlBtn.classList.toggle('show', /^https?:\/\//i.test(val));
-  });
+  // Helper: get the first image input in the add form's dynamic list
+  function getModPrimaryImageInput() {
+    const list = document.getElementById('mod-images-list');
+    return list ? list.querySelector('input.mod-input') : null;
+  }
 
   modImgDlBtn.addEventListener('click', () => {
-    const url = modImageInput.value.trim();
+    const inp = getModPrimaryImageInput();
+    const url = inp ? inp.value.trim() : '';
     if (!url) return;
     const charName = document.getElementById('mod-name').value.trim();
     const ext = url.split('?')[0].split('.').pop().toLowerCase() || 'jpg';
@@ -4710,64 +5247,25 @@
       });
   });
 
-  const modFileInput  = document.getElementById('mod-file-input');
-  const modUploadBtn  = document.getElementById('mod-upload-btn');
-
-  // Mobile-friendly upload: trigger file picker via label trick
-  modUploadBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    // Create a fresh input each time to avoid iOS quirks with reuse
-    const inp = document.createElement('input');
-    inp.type = 'file';
-    inp.accept = 'image/*';
-    // Do NOT set capture — lets user choose camera OR gallery on mobile
-    inp.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0;width:1px;height:1px;';
-    document.body.appendChild(inp);
-    inp.addEventListener('change', () => {
-      const file = inp.files[0];
-      document.body.removeChild(inp);
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = ev => {
-        const dataUrl = ev.target.result;
-        modImageInput.value = dataUrl;
-        modPreviewImg.onload = () => modPreviewWrap.classList.add('has-img');
-        modPreviewImg.src = dataUrl;
-        modImgDlBtn.classList.remove('show');
-        modUploadBtn.textContent = '\u2713 ' + file.name;
-        modUploadBtn.classList.add('loaded');
-      };
-      reader.readAsDataURL(file);
-    });
-    inp.click();
-  });
-
-  // Keep the original hidden input handler as fallback
-  modFileInput.addEventListener('change', () => {
-    const file = modFileInput.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      const dataUrl = e.target.result;
-      modImageInput.value = dataUrl;
-      modPreviewImg.onload = () => modPreviewWrap.classList.add('has-img');
-      modPreviewImg.src = dataUrl;
-      modImgDlBtn.classList.remove('show');
-      modUploadBtn.textContent = '\u2713 ' + file.name;
-      modUploadBtn.classList.add('loaded');
-    };
-    reader.readAsDataURL(file);
-    modFileInput.value = '';
-  });
+  // (Upload button was part of the single-image row; now handled via dynamic list rows)
 
   function charToCode(c) {
     const lines = ['  {'];
     lines.push(`    name: ${JSON.stringify(c.name)},`);
     if (c.series) lines.push(`    series: ${JSON.stringify(c.series)},`);
-    lines.push(`    image: ${JSON.stringify(c.image)},`);
-    if (c.quote)  lines.push(`    quote: ${JSON.stringify(c.quote)},`);
-    if (c.quote2) lines.push(`    quote2: ${JSON.stringify(c.quote2)},`);
-    if (c.quote3) lines.push(`    quote3: ${JSON.stringify(c.quote3)},`);
+    const imgs = getCharImages(c);
+    if (imgs.length === 1) {
+      lines.push(`    image: ${JSON.stringify(imgs[0])},`);
+    } else if (imgs.length > 1) {
+      lines.push(`    images: ${JSON.stringify(imgs)},`);
+    }
+    if (c.difficulty && c.difficulty !== 'standard') lines.push(`    difficulty: ${JSON.stringify(c.difficulty)},`);
+    const quotes = getCharQuotes(c);
+    if (quotes.length <= 3) {
+      quotes.forEach((q, i) => lines.push(`    ${i === 0 ? 'quote' : 'quote' + (i+1)}: ${JSON.stringify(q)},`));
+    } else {
+      lines.push(`    quotes: ${JSON.stringify(quotes)},`);
+    }
     lines.push('  },');
     return lines.join('\n');
   }
@@ -4821,26 +5319,35 @@
   document.getElementById('mod-add-btn').addEventListener('click', () => {
     const name   = document.getElementById('mod-name').value.trim();
     const series = document.getElementById('mod-series').value.trim();
-    const image  = document.getElementById('mod-image').value.trim();
-    const q1     = document.getElementById('mod-q1').value.trim();
-    const q2     = document.getElementById('mod-q2').value.trim();
-    const q3     = document.getElementById('mod-q3').value.trim();
+    const images = getDynValues('mod-images-list');
+    const quotes = getDynValues('mod-quotes-list');
 
-    let valid = true;
-    [['mod-name', name], ['mod-image', image]].forEach(([id, val]) => {
-      const el = document.getElementById(id);
-      if (!val) { el.classList.add('error'); valid = false; }
-      else el.classList.remove('error');
-    });
-    if (!valid) return;
+    // Validate name
+    const nameEl = document.getElementById('mod-name');
+    if (!name) { nameEl.classList.add('error'); return; }
+    else nameEl.classList.remove('error');
 
-    if (!q1 && !q2 && !q3 && window._showNoQuoteHintIfNeeded) window._showNoQuoteHintIfNeeded();
+    // Validate at least 1 image
+    if (!images.length) {
+      const firstInput = document.querySelector('#mod-images-list input.mod-input');
+      if (firstInput) firstInput.classList.add('error');
+      return;
+    }
 
-    const char = { name, image };
+    if (!quotes.length && window._showNoQuoteHintIfNeeded) window._showNoQuoteHintIfNeeded();
+
+    const char = { name };
     if (series) char.series = series;
-    if (q1)     char.quote  = q1;
-    if (q2)     char.quote2 = q2;
-    if (q3)     char.quote3 = q3;
+    // Store as single image or images array
+    if (images.length === 1) { char.image = images[0]; }
+    else { char.images = images; char.image = images[0]; } // keep .image for compat
+    const addDiff = getDiffFromGroup('mod-diff-group');
+    if (addDiff === 'hardcore') char.difficulty = 'hardcore';
+    // Store quotes
+    if (quotes.length === 1) { char.quote = quotes[0]; }
+    else if (quotes.length === 2) { char.quote = quotes[0]; char.quote2 = quotes[1]; }
+    else if (quotes.length === 3) { char.quote = quotes[0]; char.quote2 = quotes[1]; char.quote3 = quotes[2]; }
+    else if (quotes.length > 3) { char.quotes = quotes; char.quote = quotes[0]; }
 
     if (!window.CHARACTERS) window.CHARACTERS = [];
     const normName = name.toLowerCase().trim();
@@ -4870,10 +5377,13 @@
     renderSessionList();
     updateModCharCount();
 
-    ['mod-name','mod-series','mod-image','mod-q1','mod-q2','mod-q3'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('mod-name').value = '';
+    document.getElementById('mod-series').value = '';
+    buildDynList('mod-images-list', [''], 'image');
+    buildDynList('mod-quotes-list', ['', '', ''], 'quote');
+    setDiffInGroup('mod-diff-group', 'standard');
     modPreviewWrap.classList.remove('has-img'); modPreviewImg.src = '';
     modImgDlBtn.classList.remove('show');
-    modUploadBtn.textContent = '📁 Upload'; modUploadBtn.classList.remove('loaded');
   });
 
   ['mod-name','mod-image'].forEach(id => {
@@ -4893,7 +5403,7 @@
       item.className = 'mod-session-item';
       const img = document.createElement('img');
       img.className = 'mod-session-thumb';
-      img.src = c.image; img.loading = 'lazy';
+      img.src = getCharImages(c)[0] || ""; img.loading = "lazy";
       img.onerror = () => { img.src = 'https://placehold.co/40x52/221f35/ff8906?text=?'; };
       const info = document.createElement('div'); info.className = 'mod-session-info';
       const nm = document.createElement('div'); nm.className = 'mod-session-name'; nm.textContent = c.name;
@@ -4957,7 +5467,8 @@
     const convDone = getConvDone();
     const remaining = (window.CHARACTERS || []).filter(c => {
       if (convDone.has(c.name)) return false;
-      const r = imgAuditResults[c.name + '|' + c.image];
+      const primaryImg = getCharImages(c)[0] || '';
+      const r = imgAuditResults[c.name + '|' + primaryImg];
       return r === 'url' || r === 'base64' || r === 'broken';
     }).length;
     const btn = document.querySelector('.mod-tab-btn[data-modtab="convert"]');
@@ -4968,21 +5479,26 @@
     loadAuditCache();
     const all = window.CHARACTERS || [];
     const CONCURRENT_LIMIT = 5;
-    const toAudit = all.filter(c => imgAuditResults[c.name + '|' + c.image] === undefined);
+    const toAudit = all.filter(c => {
+      const img = getCharImages(c)[0] || '';
+      return imgAuditResults[c.name + '|' + img] === undefined;
+    });
     
     for (let i = 0; i < toAudit.length; i += CONCURRENT_LIMIT) {
       const chunk = toAudit.slice(i, i + CONCURRENT_LIMIT);
       await Promise.all(chunk.map(c => new Promise(resolve => {
-        const key = c.name + '|' + c.image;
-        if (isImgurJpg(c.image)) { imgAuditResults[key] = 'ok'; resolve(); return; }
-        if (isUrl(c.image))    { imgAuditResults[key] = 'url'; resolve(); return; }
-        if (isBase64(c.image)) { imgAuditResults[key] = 'base64'; resolve(); return; }
+        const primaryImg = getCharImages(c)[0] || '';
+        const key = c.name + '|' + primaryImg;
+        if (!primaryImg) { imgAuditResults[key] = 'broken'; resolve(); return; }
+        if (isImgurJpg(primaryImg)) { imgAuditResults[key] = 'ok'; resolve(); return; }
+        if (isUrl(primaryImg))    { imgAuditResults[key] = 'url'; resolve(); return; }
+        if (isBase64(primaryImg)) { imgAuditResults[key] = 'base64'; resolve(); return; }
 
         const img = new Image();
         const t = setTimeout(() => { imgAuditResults[key] = 'ok'; resolve(); }, 5000);
         img.onload  = () => { clearTimeout(t); imgAuditResults[key] = 'ok'; resolve(); };
         img.onerror = () => { clearTimeout(t); imgAuditResults[key] = 'broken'; resolve(); };
-        img.src = c.image + (c.image.includes('?') ? '&' : '?') + '_a=' + Date.now();
+        img.src = primaryImg + (primaryImg.includes('?') ? '&' : '?') + '_a=' + Date.now();
       })));
       saveAuditCache();
       updateUrlTabBadge();
@@ -5015,12 +5531,13 @@
     }
 
     const uid = 'uie-' + c.name.replace(/\W/g,'_');
-    wrap.appendChild(field('Name',    uid+'-name',   c.name,   'Character name'));
-    wrap.appendChild(field('Series',  uid+'-series', c.series, 'e.g. One Piece'));
-    wrap.appendChild(field('Image',   uid+'-image',  c.image,  'URL or images/...'));
-    wrap.appendChild(field('Quote 1', uid+'-q1',     c.quote,  'Quote 1'));
-    wrap.appendChild(field('Quote 2', uid+'-q2',     c.quote2, 'Quote 2'));
-    wrap.appendChild(field('Quote 3', uid+'-q3',     c.quote3, 'Quote 3'));
+    const cQuotes = getCharQuotes(c);
+    wrap.appendChild(field('Name',    uid+'-name',   c.name,           'Character name'));
+    wrap.appendChild(field('Series',  uid+'-series', c.series,         'e.g. One Piece'));
+    wrap.appendChild(field('Image',   uid+'-image',  getCharImages(c)[0] || '', 'URL or images/...'));
+    wrap.appendChild(field('Quote 1', uid+'-q1',     cQuotes[0] || '',  'Quote 1'));
+    wrap.appendChild(field('Quote 2', uid+'-q2',     cQuotes[1] || '',  'Quote 2'));
+    wrap.appendChild(field('Quote 3', uid+'-q3',     cQuotes[2] || '',  'Quote 3'));
 
     const btnRow = document.createElement('div');
     btnRow.style.cssText = 'display:flex;gap:8px;';
@@ -5047,14 +5564,19 @@
         return;
       }
 
-      // Update in CHARACTERS array
+      // Update in CHARACTERS array — preserve all fields not shown in this form
       const idx = (window.CHARACTERS || []).findIndex(x => x.name === c.name);
       if (idx !== -1) {
-        const updated = { name: newName, image: newImage };
-        if (newSeries) updated.series = newSeries;
-        if (newQ1) updated.quote  = newQ1;
-        if (newQ2) updated.quote2 = newQ2;
-        if (newQ3) updated.quote3 = newQ3;
+        const orig = window.CHARACTERS[idx];
+        // Start from original to preserve images[], difficulty, quotes[], etc.
+        const updated = { ...orig, name: newName, image: newImage };
+        // If the primary image changed, also update images[0] if images array exists
+        if (updated.images && updated.images.length) updated.images[0] = newImage;
+        if (newSeries) updated.series = newSeries; else delete updated.series;
+        // Only overwrite quotes if user typed something; otherwise keep originals
+        if (newQ1) { updated.quote = newQ1; } else { delete updated.quote; }
+        if (newQ2) { updated.quote2 = newQ2; } else { delete updated.quote2; }
+        if (newQ3) { updated.quote3 = newQ3; } else { delete updated.quote3; }
         window.CHARACTERS[idx] = updated;
 
         // Also update persisted chars
@@ -5066,14 +5588,15 @@
         if (newName !== c.name) {
           const set = getConvDone();
           if (set.has(c.name)) { set.delete(c.name); set.add(newName); saveConvDone(set); }
-          // migrate audit cache
-          const oldKey = c.name + '|' + c.image;
-          const newKey = newName + '|' + newImage;
-          if (imgAuditResults[oldKey] !== undefined) {
-            imgAuditResults[newKey] = imgAuditResults[oldKey];
-            delete imgAuditResults[oldKey];
-            saveAuditCache();
-          }
+        }
+        // Migrate audit cache key (use primary image for both old and new)
+        const oldPrimaryImg = getCharImages(orig)[0] || '';
+        const oldKey = c.name + '|' + oldPrimaryImg;
+        const newKey = newName + '|' + newImage;
+        if (oldKey !== newKey && imgAuditResults[oldKey] !== undefined) {
+          imgAuditResults[newKey] = imgAuditResults[oldKey];
+          delete imgAuditResults[oldKey];
+          saveAuditCache();
         }
 
         buildSeriesFilter(); updateModCharCount();
@@ -5100,9 +5623,10 @@
     // Merge instant classification (URL/base64) with audit results (broken local paths)
     const convDone = getConvDone();
     const allNeedAttention = all.filter(c => {
-      const r = imgAuditResults[c.name + '|' + c.image];
+      const primaryImg = getCharImages(c)[0] || '';
+      const r = imgAuditResults[c.name + '|' + primaryImg];
       if (r !== undefined) return r === 'url' || r === 'base64' || r === 'broken';
-      return needsConvert(c.image); // fallback before audit completes
+      return needsConvert(primaryImg); // fallback before audit completes
     });
     const remaining = allNeedAttention.filter(c => !convDone.has(c.name));
 
@@ -5114,7 +5638,10 @@
       return;
     }
 
-    const getResult = c => imgAuditResults[c.name + '|' + c.image] || (isBase64(c.image) ? 'base64' : isUrl(c.image) ? 'url' : 'broken');
+    const getResult = c => {
+      const primaryImg = getCharImages(c)[0] || '';
+      return imgAuditResults[c.name + '|' + primaryImg] || (isBase64(primaryImg) ? 'base64' : isUrl(primaryImg) ? 'url' : 'broken');
+    };
     const urlCount    = remaining.filter(c => getResult(c) === 'url').length;
     const b64Count    = remaining.filter(c => getResult(c) === 'base64').length;
     const brokenCount = remaining.filter(c => getResult(c) === 'broken').length;
@@ -5161,7 +5688,7 @@
 
         const top = document.createElement('div'); top.className = 'url-conv-top';
         const thumb = document.createElement('img'); thumb.className = 'url-conv-thumb';
-        thumb.src = c.image;
+        thumb.src = getCharImages(c)[0] || '';
         thumb.onerror = () => { thumb.src = 'https://placehold.co/46x60/221f35/ff8906?text=?'; };
         const meta = document.createElement('div'); meta.style.flex = '1';
         const nm = document.createElement('div'); nm.className = 'url-conv-name';
@@ -5175,7 +5702,7 @@
         top.appendChild(thumb); top.appendChild(meta);
 
         const urlDiv = document.createElement('div'); urlDiv.className = 'url-conv-url';
-        urlDiv.textContent = isB64 ? '[base64 image]' : c.image;
+        urlDiv.textContent = isB64 ? '[base64 image]' : (getCharImages(c)[0] || '');
 
         const bottom = document.createElement('div'); bottom.className = 'url-conv-bottom';
         const undoBtn = document.createElement('button');
@@ -5216,7 +5743,7 @@
 
       const top = document.createElement('div'); top.className = 'url-conv-top';
       const thumb = document.createElement('img'); thumb.className = 'url-conv-thumb';
-      thumb.src = c.image; thumb.loading = 'lazy';
+      thumb.src = getCharImages(c)[0] || ''; thumb.loading = 'lazy';
       thumb.onerror = () => { thumb.src = 'https://placehold.co/46x60/221f35/ff8906?text=?'; };
       const meta = document.createElement('div'); meta.style.flex = '1';
       const nm = document.createElement('div'); nm.className = 'url-conv-name'; nm.textContent = c.name;
@@ -5227,8 +5754,9 @@
       meta.appendChild(nm); meta.appendChild(sr);
       top.appendChild(thumb); top.appendChild(meta);
 
+      const primaryImg = getCharImages(c)[0] || '';
       const urlDiv = document.createElement('div'); urlDiv.className = 'url-conv-url';
-      urlDiv.textContent = isB64 ? '[base64 image — ' + Math.round(c.image.length/1024) + ' KB]' : c.image;
+      urlDiv.textContent = isB64 ? '[base64 image — ' + Math.round(primaryImg.length/1024) + ' KB]' : primaryImg;
 
       const bottom = document.createElement('div'); bottom.className = 'url-conv-bottom';
 
@@ -5242,14 +5770,14 @@
         dlBtn.className = 'url-conv-open'; dlBtn.style.cursor = 'pointer';
         dlBtn.textContent = '⬇ Download';
         dlBtn.addEventListener('click', () => {
-          downloadBase64(c.image, urlItemPaths[c.name] || nameToFilename(c.name));
+          downloadBase64(primaryImg, urlItemPaths[c.name] || nameToFilename(c.name));
           dlBtn.textContent = '✓ Downloaded'; dlBtn.style.color = 'var(--correct)';
           setTimeout(() => { dlBtn.textContent = '⬇ Download'; dlBtn.style.color = ''; }, 2500);
         });
         bottom.appendChild(fnInput); bottom.appendChild(dlBtn);
       } else {
         const openBtn = document.createElement('a');
-        openBtn.className = 'url-conv-open'; openBtn.href = c.image;
+        openBtn.className = 'url-conv-open'; openBtn.href = primaryImg;
         openBtn.target = '_blank'; openBtn.rel = 'noopener';
         openBtn.textContent = isBroken ? 'Try ↗' : 'Open ↗';
         bottom.appendChild(fnInput); bottom.appendChild(openBtn);
@@ -5284,8 +5812,17 @@
     const all = window.CHARACTERS || [];
     const lines = ['const CHARACTERS = ['];
     all.forEach(c => {
-      if (needsConvert(c.image) && urlItemPaths[c.name]) {
-        lines.push(charToCode({ ...c, image: urlItemPaths[c.name] }));
+      const primaryImg = getCharImages(c)[0] || '';
+      if (needsConvert(primaryImg) && urlItemPaths[c.name]) {
+        // Replace primary image with the new path, preserving images array structure
+        const patched = { ...c };
+        if (patched.images && patched.images.length) {
+          patched.images = [urlItemPaths[c.name], ...patched.images.slice(1)];
+          delete patched.image;
+        } else {
+          patched.image = urlItemPaths[c.name];
+        }
+        lines.push(charToCode(patched));
       } else {
         lines.push(charToCode(c));
       }
@@ -5301,7 +5838,7 @@
     const list    = document.getElementById('no-quote-list');
     if (!section || !list) return;
     const all = window.CHARACTERS || [];
-    const missing = all.filter(c => !c.quote || !c.quote.trim());
+    const missing = all.filter(c => !getCharQuotes(c).length);
     if (!missing.length) { section.style.display = 'none'; return; }
     section.style.display = '';
     list.innerHTML = '';
@@ -5309,7 +5846,7 @@
       const item = document.createElement('div');
       item.className = 'no-quote-item';
       const thumb = document.createElement('img');
-      thumb.className = 'no-quote-thumb'; thumb.src = c.image; thumb.loading = 'lazy';
+      thumb.className = 'no-quote-thumb'; thumb.src = getCharImages(c)[0] || ''; thumb.loading = 'lazy';
       thumb.onerror = () => { thumb.src = 'https://placehold.co/32x42/221f35/ff8906?text=?'; };
       const info = document.createElement('div'); info.style.flex = '1';
       const nm  = document.createElement('div'); nm.className  = 'no-quote-name';   nm.textContent = c.name;
@@ -5318,13 +5855,15 @@
       const fill = document.createElement('div'); fill.className = 'no-quote-fill'; fill.textContent = '+ Add quote →';
       item.appendChild(thumb); item.appendChild(info); item.appendChild(fill);
       item.addEventListener('click', () => {
-        // Route to the Edit tab so saving updates the existing character
-        // (routing to Add would trigger a duplicate warning)
         openEditForm(c);
         document.querySelectorAll('.mod-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.modtab === 'edit'));
         document.querySelectorAll('.mod-tab-panel').forEach(p => p.classList.toggle('active', p.id === 'modtab-edit'));
-        setTimeout(() => document.getElementById('edit-q1').scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
-        document.getElementById('edit-q1').focus();
+        setTimeout(() => {
+          const ql = document.getElementById('edit-quotes-list');
+          if (ql) ql.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const firstQ = ql && ql.querySelector('input.mod-input');
+          if (firstQ) firstQ.focus();
+        }, 150);
       });
       list.appendChild(item);
     });
@@ -5352,7 +5891,7 @@
       const item = document.createElement('div');
       item.className = 'edit-char-item';
       const thumb = document.createElement('img');
-      thumb.className = 'edit-char-thumb'; thumb.src = c.image; thumb.loading = 'lazy';
+      thumb.className = 'edit-char-thumb'; thumb.src = getCharImages(c)[0] || ''; thumb.loading = 'lazy';
       thumb.onerror = () => { thumb.src = 'https://placehold.co/32x42/221f35/ff8906?text=?'; };
       const info = document.createElement('div'); info.style.flex='1';
       const nm = document.createElement('div'); nm.className = 'edit-char-name'; nm.textContent = c.name;
@@ -5370,10 +5909,9 @@
     document.getElementById('edit-form-title').textContent = 'Editing: ' + c.name;
     document.getElementById('edit-name').value   = c.name   || '';
     document.getElementById('edit-series').value = c.series || '';
-    document.getElementById('edit-image').value  = c.image  || '';
-    document.getElementById('edit-q1').value     = c.quote  || '';
-    document.getElementById('edit-q2').value     = c.quote2 || '';
-    document.getElementById('edit-q3').value     = c.quote3 || '';
+    buildDynList('edit-images-list', getCharImages(c).length ? getCharImages(c) : [''], 'image');
+    buildDynList('edit-quotes-list', getCharQuotes(c).length ? getCharQuotes(c) : ['', '', ''], 'quote');
+    setDiffInGroup('edit-diff-group', c.difficulty || 'standard');
     document.getElementById('edit-code-wrap').classList.remove('show');
     const fc = document.getElementById('edit-form-container');
     fc.style.display = '';
@@ -5392,23 +5930,31 @@
     if (!editingChar) return;
     const newName   = document.getElementById('edit-name').value.trim();
     const newSeries = document.getElementById('edit-series').value.trim();
-    const newImage  = document.getElementById('edit-image').value.trim();
-    const newQ1     = document.getElementById('edit-q1').value.trim();
-    const newQ2     = document.getElementById('edit-q2').value.trim();
-    const newQ3     = document.getElementById('edit-q3').value.trim();
-    if (!newName || !newImage) {
+    const newImages = getDynValues('edit-images-list');
+    const newQuotes = getDynValues('edit-quotes-list');
+    if (!newName || !newImages.length) {
       if (!newName)  document.getElementById('edit-name').classList.add('error');
-      if (!newImage) document.getElementById('edit-image').classList.add('error');
+      if (!newImages.length) {
+        const firstInput = document.querySelector('#edit-images-list input.mod-input');
+        if (firstInput) firstInput.classList.add('error');
+      }
       return;
     }
     const oldName = editingChar.name;
     const idx = (window.CHARACTERS || []).findIndex(c => c.name === oldName);
     if (idx !== -1) {
-      const updated = { name: newName, image: newImage };
+      const updated = { name: newName };
       if (newSeries) updated.series = newSeries;
-      if (newQ1)     updated.quote  = newQ1;
-      if (newQ2)     updated.quote2 = newQ2;
-      if (newQ3)     updated.quote3 = newQ3;
+      // Images
+      if (newImages.length === 1) { updated.image = newImages[0]; }
+      else { updated.images = newImages; updated.image = newImages[0]; }
+      const editDiff = getDiffFromGroup('edit-diff-group');
+      if (editDiff === 'hardcore') updated.difficulty = 'hardcore';
+      // Quotes
+      if (newQuotes.length === 1) { updated.quote = newQuotes[0]; }
+      else if (newQuotes.length === 2) { updated.quote = newQuotes[0]; updated.quote2 = newQuotes[1]; }
+      else if (newQuotes.length === 3) { updated.quote = newQuotes[0]; updated.quote2 = newQuotes[1]; updated.quote3 = newQuotes[2]; }
+      else if (newQuotes.length > 3) { updated.quotes = newQuotes; updated.quote = newQuotes[0]; }
       window.CHARACTERS[idx] = updated;
       editingChar = updated;
 
@@ -5544,7 +6090,7 @@
       persisted.forEach(c => {
         if (!sessionChars.find(x => x.name === c.name)) sessionChars.push(c);
       });
-      (window.CHARACTERS || []).filter(c => needsConvert(c.image)).forEach(c => {
+      (window.CHARACTERS || []).filter(c => needsConvert(getCharImages(c)[0] || '')).forEach(c => {
         if (!urlItemPaths[c.name]) urlItemPaths[c.name] = 'images/' + nameToFilename(c.name);
       });
     }
@@ -5741,7 +6287,7 @@
       
       let cAdded = 0;
       chars.forEach(c => {
-        if (c && c.name && c.image && !(window.CHARACTERS||[]).find(x => x.name === c.name)) {
+        if (c && c.name && (c.image || (c.images && c.images.length)) && !(window.CHARACTERS||[]).find(x => x.name === c.name)) {
           (window.CHARACTERS || []).push(c);
           cAdded++;
         }
@@ -5819,7 +6365,7 @@
     gistFetch().then(({ chars, opeds }) => {
       let cAdded = 0, oAdded = 0;
       chars.forEach(c => {
-        if (c && c.name && c.image && !(window.CHARACTERS||[]).find(x => x.name === c.name)) {
+        if (c && c.name && (c.image || (c.images && c.images.length)) && !(window.CHARACTERS||[]).find(x => x.name === c.name)) {
           (window.CHARACTERS||[]).push(c);
           cAdded++;
         }
@@ -6800,7 +7346,7 @@
         if (!window.CHARACTERS) window.CHARACTERS = [];
         const charMap = new Map(window.CHARACTERS.map(c => [c.name, c]));
         gistChars.forEach(c => {
-          if (c && c.name && c.image) {
+          if (c && c.name && (c.image || (c.images && c.images.length))) {
             const existing = charMap.get(c.name);
             if (!existing) {
               window.CHARACTERS.push(c);
@@ -6882,7 +7428,7 @@
         let changed = 0;
         const charMap = new Map(window.CHARACTERS.map(c => [c.name, c]));
         (chars||[]).forEach(c => {
-          if (!c || !c.name || !c.image) return;
+          if (!c || !c.name || !(c.image || (c.images && c.images.length))) return;
           const existing = charMap.get(c.name);
           if (!existing) { window.CHARACTERS.push(c); changed++; }
           else if (JSON.stringify(existing) !== JSON.stringify(c)) { Object.assign(existing, c); changed++; }
@@ -6927,6 +7473,323 @@
       console.log(`⚠️ Fetch failed: ${e.message}`);
       bootGame();
     });
+  })();
+
+  // ═══════════════════════════════════════════════════
+  //  KISS MARRY KILL
+  // ═══════════════════════════════════════════════════
+  (function() {
+    const ROLES = ['kiss', 'marry', 'kill'];
+    const ROLE_EMOJI = { kiss: '💋', marry: '💍', kill: '💀' };
+    const ROLE_LABEL = { kiss: 'Kiss', marry: 'Marry', kill: 'Kill' };
+
+    // Pool tracking to avoid repeat triplets
+    let kmkPool = [];
+    let kmkAssignments = {}; // { charIndex: role }
+    let kmkChars = [];       // current 3 chars
+    let kmkDone  = false;
+
+    function kmkFilteredPool() {
+      // Reuse same filteredChars logic (difficulty + series filter)
+      return filteredChars().filter(c => getCharImages(c).length > 0);
+    }
+
+    function pickThree() {
+      let pool = kmkFilteredPool();
+      if (pool.length < 3) return null;
+
+      // Shuffle pool-tracking for variety
+      if (kmkPool.length < 3) {
+        kmkPool = [...pool].sort(() => Math.random() - 0.5);
+      }
+
+      // Try to pick 3 from pool without repeating recent ones
+      const picked = [];
+      const used   = new Set();
+      while (picked.length < 3 && kmkPool.length > 0) {
+        const c = kmkPool.shift();
+        if (!used.has(c.name)) { picked.push(c); used.add(c.name); }
+      }
+
+      // If pool exhausted mid-pick, refill and finish
+      if (picked.length < 3) {
+        kmkPool = [...pool].sort(() => Math.random() - 0.5)
+          .filter(c => !used.has(c.name));
+        while (picked.length < 3 && kmkPool.length > 0) {
+          const c = kmkPool.shift();
+          if (!used.has(c.name)) { picked.push(c); used.add(c.name); }
+        }
+      }
+
+      return picked.length === 3 ? picked : null;
+    }
+
+    function renderKmk(chars) {
+      kmkChars       = chars;
+      kmkAssignments = {};
+      kmkDone        = false;
+
+      const container  = document.getElementById('kmk-cards');
+      const subtitle   = document.getElementById('kmk-subtitle');
+      const nextBtn    = document.getElementById('kmk-next-btn');
+      const resultDiv  = document.getElementById('kmk-result');
+
+      subtitle.textContent = 'Pick one role for each character';
+      nextBtn.style.display = 'none';
+      resultDiv.style.display = 'none';
+      container.innerHTML = '';
+
+      chars.forEach((char, idx) => {
+        const img0 = getCharImages(char)[0] || '';
+
+        const card = document.createElement('div');
+        card.className = 'kmk-card';
+
+        // Image
+        const imgWrap = document.createElement('div');
+        imgWrap.className = 'kmk-img-wrap';
+        imgWrap.id = 'kmk-imgwrap-' + idx;
+
+        const badge = document.createElement('div');
+        badge.className = 'kmk-role-badge';
+        badge.id = 'kmk-badge-' + idx;
+
+        const img = document.createElement('img');
+        img.src = img0; img.alt = char.name; img.loading = 'lazy';
+        img.onerror = () => { img.src = 'https://placehold.co/120x160/221f35/ff8906?text=?'; };
+
+        imgWrap.appendChild(badge);
+        imgWrap.appendChild(img);
+
+        const name = document.createElement('div');
+        name.className = 'kmk-char-name';
+        name.textContent = char.name;
+
+        const series = document.createElement('div');
+        series.className = 'kmk-char-series';
+        series.textContent = char.series || '';
+
+        // Role buttons
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'kmk-role-btns';
+
+        ROLES.forEach(role => {
+          const btn = document.createElement('button');
+          btn.className = 'kmk-role-btn';
+          btn.dataset.role = role;
+          btn.dataset.charIdx = idx;
+          btn.textContent = ROLE_EMOJI[role] + ' ' + ROLE_LABEL[role];
+
+          btn.addEventListener('click', () => {
+            if (kmkDone) return;
+            const prevRole = kmkAssignments[idx];
+
+            // Unassign this char's previous role
+            if (prevRole) {
+              delete kmkAssignments[idx];
+              // Unmark the old button
+              btnGroup.querySelectorAll('.kmk-role-btn').forEach(b => {
+                if (b.dataset.role === prevRole) b.classList.remove('selected');
+              });
+              // Re-enable that role on other cards
+              refreshTakenState();
+            }
+
+            // If clicking same role again → just unselect (already cleared above)
+            if (prevRole === role) {
+              imgWrap.className = 'kmk-img-wrap';
+              badge.textContent = '';
+              refreshTakenState();
+              return;
+            }
+
+            // Assign new role
+            kmkAssignments[idx] = role;
+            // Mark button selected
+            btnGroup.querySelectorAll('.kmk-role-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            // Update image border
+            imgWrap.className = 'kmk-img-wrap assigned-' + role;
+            badge.textContent = ROLE_EMOJI[role];
+
+            refreshTakenState();
+
+            // Check if all 3 assigned
+            if (Object.keys(kmkAssignments).length === 3) {
+              kmkDone = true;
+              showKmkResult();
+            }
+          });
+
+          btnGroup.appendChild(btn);
+        });
+
+        card.appendChild(imgWrap);
+        card.appendChild(name);
+        card.appendChild(series);
+        card.appendChild(btnGroup);
+        container.appendChild(card);
+      });
+    }
+
+    function refreshTakenState() {
+      // For each role, if it's already assigned to a char,
+      // disable that role button on the OTHER two cards
+      const takenRoles = new Set(Object.values(kmkAssignments));
+
+      document.querySelectorAll('.kmk-role-btn').forEach(btn => {
+        const role = btn.dataset.role;
+        const idx  = parseInt(btn.dataset.charIdx);
+        const myRole = kmkAssignments[idx];
+
+        // If this role is taken by another char (not me), mark taken
+        const takenByOther = takenRoles.has(role) && myRole !== role;
+        btn.classList.toggle('taken', takenByOther);
+      });
+    }
+
+    function showKmkResult() {
+      const nextBtn   = document.getElementById('kmk-next-btn');
+      const resultDiv = document.getElementById('kmk-result');
+      const subtitle  = document.getElementById('kmk-subtitle');
+
+      subtitle.textContent = '✓ All assigned!';
+      nextBtn.style.display = '';
+
+      resultDiv.innerHTML = '';
+      resultDiv.style.display = 'flex';
+      resultDiv.style.flexDirection = 'column';
+      resultDiv.style.gap = '10px';
+
+      // Order: kiss → marry → kill
+      ROLES.forEach(role => {
+        const charIdx = Object.keys(kmkAssignments).find(k => kmkAssignments[k] === role);
+        if (charIdx === undefined) return;
+        const char = kmkChars[parseInt(charIdx)];
+
+        const row = document.createElement('div');
+        row.className = 'kmk-result-row';
+
+        const rImg = document.createElement('img');
+        rImg.className = 'kmk-result-img';
+        rImg.src = getCharImages(char)[0] || '';
+        rImg.alt = char.name;
+        rImg.onerror = () => { rImg.src = 'https://placehold.co/36x46/221f35/ff8906?text=?'; };
+
+        const icon = document.createElement('span');
+        icon.className = 'kmk-result-icon';
+        icon.textContent = ROLE_EMOJI[role];
+
+        const nameEl = document.createElement('div');
+        nameEl.style.flex = '1';
+        const nm = document.createElement('div');
+        nm.className = 'kmk-result-name';
+        nm.textContent = ROLE_LABEL[role] + ': ' + char.name;
+        const sr = document.createElement('div');
+        sr.className = 'kmk-result-series';
+        sr.textContent = char.series || '';
+        nameEl.appendChild(nm);
+        nameEl.appendChild(sr);
+
+        row.appendChild(rImg);
+        row.appendChild(icon);
+        row.appendChild(nameEl);
+        resultDiv.appendChild(row);
+      });
+    }
+
+    function startKmk() {
+      const chars = pickThree();
+      if (!chars) {
+        document.getElementById('kmk-cards').innerHTML =
+          '<div style="color:var(--muted);text-align:center;padding:24px">Not enough characters in this pool.<br>Try a different filter or switch to Hardcore.</div>';
+        document.getElementById('kmk-subtitle').textContent = '';
+        document.getElementById('kmk-next-btn').style.display = 'none';
+        document.getElementById('kmk-result').style.display = 'none';
+        return;
+      }
+      renderKmk(chars);
+    }
+
+    // Wire up buttons
+    document.getElementById('kmk-next-btn').addEventListener('click', startKmk);
+    document.getElementById('kmk-reroll-btn').addEventListener('click', () => {
+      kmkPool = [];
+      startKmk();
+    });
+
+    // Expose for external triggers (tab switch, difficulty change, series filter change)
+    window._kmkReset = (forceRun = false) => {
+      kmkPool = [];
+      const section = document.getElementById('kmk-section');
+      if (forceRun || (section && section.classList.contains('active'))) startKmk();
+    };
+
+  })();
+
+  // ═══════════════════════════════════════════════════
+  //  RANDOM CHARACTER GENERATOR
+  // ═══════════════════════════════════════════════════
+  (function() {
+    let rngCount = 1;
+
+    // Count selector
+    document.querySelectorAll('.rng-count-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.rng-count-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        rngCount = parseInt(btn.dataset.n);
+      });
+    });
+
+    function rngRoll() {
+      const pool = filteredChars();
+      const results = document.getElementById('rng-results');
+      results.innerHTML = '';
+
+      if (!pool.length) {
+        results.innerHTML = '<div class="rng-empty">No characters in this pool.<br>Try a different filter or difficulty.</div>';
+        return;
+      }
+
+      // Pick without replacement (clamp to pool size)
+      const n = Math.min(rngCount, pool.length);
+      const shuffled = [...pool].sort(() => Math.random() - 0.5);
+      const picked = shuffled.slice(0, n);
+
+      picked.forEach(char => {
+        const img0 = getCharImages(char)[0] || '';
+
+        const card = document.createElement('div');
+        card.className = 'rng-card';
+
+        const imgWrap = document.createElement('div');
+        imgWrap.className = 'rng-img-wrap';
+        const img = document.createElement('img');
+        img.src = img0; img.alt = char.name; img.loading = 'lazy';
+        img.onerror = () => { img.src = 'https://placehold.co/120x160/221f35/ff8906?text=?'; };
+        imgWrap.appendChild(img);
+
+        const name = document.createElement('div');
+        name.className = 'rng-char-name';
+        name.textContent = char.name;
+
+        const series = document.createElement('div');
+        series.className = 'rng-char-series';
+        series.textContent = char.series || '';
+
+        card.appendChild(imgWrap);
+        card.appendChild(name);
+        card.appendChild(series);
+        results.appendChild(card);
+      });
+    }
+
+    document.getElementById('rng-roll-btn').addEventListener('click', rngRoll);
+
+    // Expose for tab switch and filter changes
+    window._rngRoll = rngRoll;
+    window._rngInit = rngRoll; // auto-roll on first open
   })();
 
   // ═══════════════════════════════════════════════════
