@@ -4050,7 +4050,7 @@
 
   function buildShareText(spoilerFree, result) {
     const maxG = result ? (result.maxGuesses || 5) : (cropMode ? 6 : 5);
-    const wrongCount = result ? result.wrongCount : (maxG - guessesLeft - (gameState==='correct'?0:0));
+    const wrongCount = result ? result.wrongCount : (maxG - guessesLeft);
     const won = result ? result.won : gameState === 'correct';
     const name = result ? result.name : currentChar.name;
     const guessNum = won ? wrongCount + 1 : '✗';
@@ -4502,7 +4502,7 @@
   });
   document.getElementById('tl-undo').addEventListener('click', undoTL);
 
-  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
   function rgbHex(rgb){ const m=rgb.match(/\d+/g); if(!m)return rgb; return '#'+m.slice(0,3).map(n=>parseInt(n).toString(16).padStart(2,'0')).join(''); }
 
   // ═══════════════════════════════════════════════════
@@ -6493,7 +6493,7 @@
     const card = _origBuildMiniCard(char, tierId);
     addLongPress(card, () => {
       clearSel();
-      openLightbox(char.image, char.name);
+      openLightbox(getCharImages(char)[0] || char.image || '', char.name);
     });
     return card;
   };
@@ -6661,14 +6661,15 @@
       const customDur = opedCurrent.endTime - opedStart;
       return Math.max(customDur, 5); // Minimum 5 seconds
     }
-    // Default to 90 seconds (standard anime OP/ED length)
-    return Math.min(90, opedDuration);
+    // Return the user-selected clip duration
+    return opedDuration;
   }
 
   const embedPlayer = document.getElementById('oped-embed-player');
 
   function opedPlayClip() {
     if (!opedCurrent) return;
+    if (opedState !== 'done') opedState = 'playing';
     clearTimeout(opedClipTimer);
     clearInterval(opedProgressTimer);
 
@@ -6828,7 +6829,7 @@
   }
 
   function opedMakeGuess(guess) {
-    if (opedState === 'done') return;
+    if (opedState === 'done' || opedState === 'idle') return;
 
     let correct = '';
     if (opedGameMode === 'anime') {
@@ -6875,15 +6876,15 @@
       document.getElementById('oped-input').value = '';
 
       if (opedGuessesLeft <= 0) {
-      opedState = 'done';
-      opedStreak = 0;
-      bumpOpedStreak(0);
-      recordOped(false, 0);
-      document.getElementById('oped-input').disabled = true;
-      clearTimeout(opedClipTimer);
-      try { ytPlayer && ytPlayer.stopVideo(); } catch(e){}
-      try { if(atPlayer) { atPlayer.pause(); atPlayer.src = ''; } } catch(e){}
-      try { if(embedPlayer) { embedPlayer.src = ''; } } catch(e){}
+        opedState = 'done';
+        opedStreak = 0;
+        bumpOpedStreak(0);
+        recordOped(false, 0);
+        document.getElementById('oped-input').disabled = true;
+        clearTimeout(opedClipTimer);
+        try { ytPlayer && ytPlayer.stopVideo(); } catch(e){}
+        try { if(atPlayer) { atPlayer.pause(); atPlayer.src = ''; } } catch(e){}
+        try { if(embedPlayer) { embedPlayer.src = ''; } } catch(e){}
         stopOpedBars();
         const rev = document.getElementById('oped-answer-reveal');
         let revealText = '❌ It was <strong>' + opedCurrent.title + '</strong> (' + (opedCurrent.type||'OP') + ')';
@@ -6976,7 +6977,6 @@
 
   document.getElementById('oped-input').addEventListener('input', e => { opedBuildAc(e.target.value); });
   document.getElementById('oped-mod-title').addEventListener('input', e => { opedModBuildAc(e.target.value); });
-  document.getElementById('oped-mod-title').addEventListener('focus', e => { opedModBuildAc(e.target.value); });
   document.getElementById('oped-mod-title').addEventListener('focus', e => { opedModBuildAc(e.target.value); });
   document.addEventListener('click', e => {
     if (!e.target.closest('.series-ac-wrap')) {
@@ -7936,10 +7936,10 @@ self.addEventListener('fetch', e => {
 
   document.getElementById('series-filter-search')?.addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase().trim();
-    const chips = document.querySelectorAll('#series-filter .series-chip');
+    const chips = document.querySelectorAll('#series-filter .series-pill');
     chips.forEach(chip => {
       const text = chip.textContent.toLowerCase();
-      if (text.includes(term) || chip.classList.contains('all')) {
+      if (text.includes(term) || !chip.dataset.key) {
         chip.style.display = '';
       } else {
         chip.style.display = 'none';
@@ -7970,6 +7970,16 @@ self.addEventListener('fetch', e => {
 
   document.getElementById('oped-series-search')?.addEventListener('input', (e) => {
     opedSeriesFilter = e.target.value.toLowerCase().trim();
+    // Sync chip visual state
+    const chips = document.querySelectorAll('.oped-chip');
+    chips.forEach(chip => {
+      const s = chip.dataset.series.toLowerCase();
+      const isActive = s === opedSeriesFilter || (opedSeriesFilter === '' && s === '');
+      chip.classList.toggle('active', isActive);
+      chip.style.borderColor = isActive ? 'var(--accent)' : 'var(--border)';
+      chip.style.color = isActive ? 'var(--accent)' : 'var(--muted)';
+      chip.style.background = isActive ? 'var(--surface2)' : 'var(--surface)';
+    });
     if (opedReady) {
       // Debounce slightly to avoid excessive pool refreshes while typing
       clearTimeout(window._opedSearchTimer);
@@ -8036,25 +8046,7 @@ self.addEventListener('fetch', e => {
     });
   });
 
-  // Also hook into the search bar to update chips
-  document.getElementById('oped-series-search')?.addEventListener('input', (e) => {
-    const val = e.target.value.toLowerCase();
-    const chips = document.querySelectorAll('.oped-chip');
-    chips.forEach(chip => {
-      const s = chip.dataset.series.toLowerCase();
-      if (s === val || (val === "" && s === "")) {
-        chip.classList.add('active');
-        chip.style.borderColor = 'var(--accent)';
-        chip.style.color = 'var(--accent)';
-        chip.style.background = 'var(--surface2)';
-      } else {
-        chip.classList.remove('active');
-        chip.style.borderColor = 'var(--border)';
-        chip.style.color = 'var(--muted)';
-        chip.style.background = 'var(--surface)';
-      }
-    });
-  });
+  // Chip sync is now handled in the oped-series-search input listener above.
 
   function getFilteredOpedPool() {
     let pool = [...(window.OPEDS || [])];
