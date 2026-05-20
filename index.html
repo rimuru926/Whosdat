@@ -3444,6 +3444,14 @@
   //  GAME (Levels 1 + Level A)
   // ═══════════════════════════════════════════════════
   let streak=0, guessesLeft=5, currentChar=null, gameState='playing', pool=[], acIndex=-1;
+  // Per-mode session state
+  const sessionStates = {
+    normal: { streak: 0, currentChar: null, pool: [], guessesLeft: 5, gameState: 'playing', wrongTags: [], hintUsed: false },
+    blur:   { streak: 0, currentChar: null, pool: [], guessesLeft: 5, gameState: 'playing', wrongTags: [], hintUsed: false },
+    crop:   { streak: 0, currentChar: null, pool: [], guessesLeft: 6, gameState: 'playing', wrongTags: [], hintUsed: false },
+    daily:  { streak: 0, currentChar: null, pool: [], guessesLeft: 5, gameState: 'playing', wrongTags: [], hintUsed: false }
+  };
+  function getCurrentModeKey() { return dailyMode ? 'daily' : cropMode ? 'crop' : blurMode ? 'blur' : 'normal'; }
   let blurMode = false, dailyMode = false, hintUsed = false, cropMode = false;
   let cropRect = { x: 0, y: 0, size: 16 };
   const BLUR_START = 20, BLUR_STEP = 4;
@@ -3585,24 +3593,81 @@
   document.querySelectorAll('.gmode-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.classList.contains('active')) return;
+      
+      // Save current mode state before switching
+      const oldMode = getCurrentModeKey();
+      sessionStates[oldMode] = {
+        streak, currentChar, pool: [...pool], guessesLeft, gameState, 
+        wrongTags: Array.from(wrongTags.querySelectorAll('.wrong-tag')).map(t => t.textContent),
+        hintUsed, nextChar, cropRect: {...cropRect}
+      };
+
+      document.querySelectorAll('.gmode-btn').forEach(b => b.classList.toggle('active', b === btn));
       const mode = btn.dataset.gmode;
       blurMode  = mode === 'blur';
       cropMode  = mode === 'crop';
       dailyMode = mode === 'daily';
-      document.querySelectorAll('.gmode-btn').forEach(b => b.classList.toggle('active', b === btn));
       saveGameMode();
-      hintUsed = false;
-      // Keep same character — just reapply image effect; only reset if going daily or no char yet
-      if (dailyMode) {
-        streak = 0; setStreak(0);
-        loadDailyMode();
-      } else if (currentChar) {
-        clearGameUI();
-        applyImageLoad();
-        gInput.focus();
+
+      // Load new mode state
+      const newState = sessionStates[mode];
+      if (newState && newState.currentChar) {
+        streak = newState.streak;
+        currentChar = newState.currentChar;
+        pool = newState.pool;
+        guessesLeft = newState.guessesLeft;
+        gameState = newState.gameState;
+        hintUsed = newState.hintUsed;
+        nextChar = newState.nextChar;
+        cropRect = newState.cropRect || { x: 0, y: 0, size: 16 };
+        
+        setStreak(streak);
+        clearGameUI(); // resets UI
+        
+        // Restore wrong tags
+        if (newState.wrongTags) {
+          newState.wrongTags.forEach(text => {
+            const tag = document.createElement('div');
+            tag.className = 'wrong-tag';
+            tag.textContent = text;
+            wrongTags.appendChild(tag);
+          });
+        }
+        
+        // Restore dots
+        const maxG = cropMode ? 6 : 5;
+        const used = maxG - guessesLeft;
+        for(let i=0; i<used; i++) { if(dots[i]) dots[i].classList.add('used'); }
+
+        if (gameState === 'playing') {
+          applyImageLoad();
+          if (hintUsed) {
+             const series = currentChar.series || 'Unknown series';
+             hintReveal.innerHTML = '💡 Series: <strong>' + series + '</strong>';
+             hintReveal.classList.add('show');
+          }
+          gInput.focus();
+        } else {
+          // Game was already finished
+          charImg.src = getCharImage(currentChar);
+          loadCover.style.display='none';
+          charImg.style.opacity='1';
+          resName.textContent = currentChar.name;
+          resSeries.textContent = currentChar.series || '';
+          resOverlay.className = 'result-overlay ' + (gameState === 'correct' ? 'correct' : 'failed');
+          if (gameState === 'failed') {
+            ansReveal.innerHTML = 'The answer was <strong>' + currentChar.name + '</strong>';
+            ansReveal.className = 'show';
+          }
+          nextBtn.classList.add('show');
+          skipBtn.classList.add('hide');
+          shareRow.classList.add('show');
+        }
       } else {
+        // First time in this mode this session
         streak = 0; setStreak(0);
-        resetPool(); loadNext();
+        resetPool(); 
+        loadNext();
       }
     });
   });
