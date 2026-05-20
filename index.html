@@ -3079,6 +3079,26 @@
   hamburger.addEventListener('click', () => drawer.classList.contains('open') ? closeDrawer() : openDrawer());
   drawerOverlay.addEventListener('click', closeDrawer);
 
+  // ── Secret mod panel sequence ────────────────────
+  const MOD_SEQ       = ['quiz','tierlist','quiz','themes','tierlist'];
+  const MOD_VIS_KEY   = 'pixelwho-mod-visible-v1';
+  let modSeq          = [];
+
+  function revealModPanel() {
+    const item = document.getElementById('mod-drawer-item');
+    if (!item) return;
+    item.style.display = '';
+    try { localStorage.setItem(MOD_VIS_KEY, '1'); } catch(e) {}
+  }
+
+  // Restore from cache on load
+  try {
+    if (localStorage.getItem(MOD_VIS_KEY) === '1') {
+      const item = document.getElementById('mod-drawer-item');
+      if (item) item.style.display = '';
+    }
+  } catch(e) {}
+
   document.querySelectorAll('.drawer-item').forEach(item => {
     item.addEventListener('click', () => {
       const t = item.dataset.tab;
@@ -3116,26 +3136,6 @@
       closeDrawer();
     });
   });
-
-  // ── Secret mod panel sequence ────────────────────
-  const MOD_SEQ       = ['quiz','tierlist','quiz','themes','tierlist'];
-  const MOD_VIS_KEY   = 'pixelwho-mod-visible-v1';
-  let modSeq          = [];
-
-  function revealModPanel() {
-    const item = document.getElementById('mod-drawer-item');
-    if (!item) return;
-    item.style.display = '';
-    try { localStorage.setItem(MOD_VIS_KEY, '1'); } catch(e) {}
-  }
-
-  // Restore from cache on load
-  try {
-    if (localStorage.getItem(MOD_VIS_KEY) === '1') {
-      const item = document.getElementById('mod-drawer-item');
-      if (item) item.style.display = '';
-    }
-  } catch(e) {}
 
   // ═══════════════════════════════════════════════════
   //  SERIES FILTER & HELPER
