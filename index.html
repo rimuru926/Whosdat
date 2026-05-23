@@ -206,12 +206,17 @@
       border-color: var(--accent); color: var(--accent);
     }
     .series-pill.hc-series {
-      border-color: rgba(242,95,76,0.35); color: #f28a80;
+      border-color: color-mix(in srgb, var(--wrong) 40%, transparent);
+      color: color-mix(in srgb, var(--wrong) 70%, var(--muted));
     }
-    .series-pill.hc-series:hover { border-color: #f25f4c; color: #f25f4c; }
+    .series-pill.hc-series:hover {
+      border-color: var(--wrong);
+      color: var(--wrong);
+    }
     .series-pill.hc-series.active {
-      background: rgba(242,95,76,0.13);
-      border-color: #f25f4c; color: #f25f4c;
+      background: color-mix(in srgb, var(--wrong) 13%, transparent);
+      border-color: var(--wrong);
+      color: var(--wrong);
     }
 
     .series-search-input {
@@ -6229,7 +6234,7 @@
         const info = document.createElement('div');
         info.className = 'series-lib-info';
         const diffBadge = sDiff === 'hardcore'
-          ? '<span style="margin-left:6px;font-size:0.68rem;font-weight:700;color:#f25f4c;background:rgba(242,95,76,0.12);border:1px solid rgba(242,95,76,0.3);border-radius:100px;padding:1px 7px;">💀 HARDCORE</span>'
+          ? '<span style="margin-left:6px;font-size:0.68rem;font-weight:700;color:var(--wrong);background:color-mix(in srgb,var(--wrong) 12%,transparent);border:1px solid color-mix(in srgb,var(--wrong) 30%,transparent);border-radius:100px;padding:1px 7px;">💀 HARDCORE</span>'
           : '';
         info.innerHTML = `<div class="series-lib-name">${esc(sName)}${diffBadge}</div><div class="series-lib-stats">${cCount} chars · ${oCount} OP/EDs</div>`;
 
@@ -6247,7 +6252,7 @@
         stdBtn.title = 'Standard — visible in normal mode';
 
         const hcBtn = document.createElement('button');
-        hcBtn.style.cssText = `padding:4px 9px;border-radius:7px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;border:1.5px solid ${sDiff === 'hardcore' ? '#f25f4c' : 'var(--border)'};background:${sDiff === 'hardcore' ? 'rgba(242,95,76,0.12)' : 'transparent'};color:${sDiff === 'hardcore' ? '#f25f4c' : 'var(--muted)'}`;
+        hcBtn.style.cssText = `padding:4px 9px;border-radius:7px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;border:1.5px solid ${sDiff === 'hardcore' ? 'var(--wrong)' : 'var(--border)'};background:${sDiff === 'hardcore' ? 'color-mix(in srgb,var(--wrong) 12%,transparent)' : 'transparent'};color:${sDiff === 'hardcore' ? 'var(--wrong)' : 'var(--muted)'}`;
         hcBtn.textContent = '💀 HC';
         hcBtn.title = 'Hardcore — hidden unless specifically selected';
 
@@ -6255,13 +6260,13 @@
           stdBtn.style.borderColor = d === 'standard' ? '#4ade80' : 'var(--border)';
           stdBtn.style.background  = d === 'standard' ? 'rgba(74,222,128,0.12)' : 'transparent';
           stdBtn.style.color       = d === 'standard' ? '#4ade80' : 'var(--muted)';
-          hcBtn.style.borderColor  = d === 'hardcore' ? '#f25f4c' : 'var(--border)';
-          hcBtn.style.background   = d === 'hardcore' ? 'rgba(242,95,76,0.12)' : 'transparent';
-          hcBtn.style.color        = d === 'hardcore' ? '#f25f4c' : 'var(--muted)';
+          hcBtn.style.borderColor  = d === 'hardcore' ? 'var(--wrong)' : 'var(--border)';
+          hcBtn.style.background   = d === 'hardcore' ? 'color-mix(in srgb,var(--wrong) 12%,transparent)' : 'transparent';
+          hcBtn.style.color        = d === 'hardcore' ? 'var(--wrong)' : 'var(--muted)';
           // Update badge in info
           const badge = info.querySelector('span');
           if (d === 'hardcore') {
-            if (!badge) info.querySelector('.series-lib-name').insertAdjacentHTML('beforeend', '<span style="margin-left:6px;font-size:0.68rem;font-weight:700;color:#f25f4c;background:rgba(242,95,76,0.12);border:1px solid rgba(242,95,76,0.3);border-radius:100px;padding:1px 7px;">💀 HARDCORE</span>');
+            if (!badge) info.querySelector('.series-lib-name').insertAdjacentHTML('beforeend', '<span style="margin-left:6px;font-size:0.68rem;font-weight:700;color:var(--wrong);background:color-mix(in srgb,var(--wrong) 12%,transparent);border:1px solid color-mix(in srgb,var(--wrong) 30%,transparent);border-radius:100px;padding:1px 7px;">💀 HARDCORE</span>');
           } else {
             if (badge) badge.remove();
           }
