@@ -1697,6 +1697,10 @@
     [data-theme="personaMode"] .hamburger { border-color: rgba(255,0,0,0.5); }
     [data-theme="personaMode"] .drawer { background: #1a0000; border-right-color: rgba(255,0,0,0.4); }
     [data-theme="personaMode"] .drawer-item.active { background: rgba(255,0,0,0.15); border-color: rgba(255,0,0,0.4); color: #ff0000; }
+    /* Persona: --wrong == --accent == --muted (all red), so HC series use yellow (--accent2) instead */
+    [data-theme="personaMode"] .series-pill.hc-series { border-color: rgba(255,255,0,0.4); color: rgba(255,255,0,0.7); }
+    [data-theme="personaMode"] .series-pill.hc-series:hover { border-color: #ffff00; color: #ffff00; }
+    [data-theme="personaMode"] .series-pill.hc-series.active { background: rgba(255,255,0,0.13); border-color: #ffff00; color: #ffff00; }
 
     /* Theme picker card styles */
     .theme-picker-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; width:100%; }
