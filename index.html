@@ -205,6 +205,14 @@
       background: rgba(255,137,6,0.13);
       border-color: var(--accent); color: var(--accent);
     }
+    .series-pill.hc-series {
+      border-color: rgba(242,95,76,0.35); color: #f28a80;
+    }
+    .series-pill.hc-series:hover { border-color: #f25f4c; color: #f25f4c; }
+    .series-pill.hc-series.active {
+      background: rgba(242,95,76,0.13);
+      border-color: #f25f4c; color: #f25f4c;
+    }
 
     .series-search-input {
       width: 100%; background: var(--surface); border: 1.5px solid var(--border);
@@ -3155,6 +3163,30 @@
     try { localStorage.setItem(DIFFICULTY_KEY, activeDifficulty); } catch(e) {}
   }
 
+  // ── Series Difficulty ─────────────────────────────
+  // Map of seriesName → 'standard' | 'hardcore'
+  // Default is 'standard' for any series not explicitly set.
+  const SERIES_DIFF_KEY = 'pixelwho-series-difficulty-v1';
+  let seriesDiffMap = {}; // { "One Piece": "standard", "Some Niche Show": "hardcore" }
+
+  function loadSeriesDiffMap() {
+    try {
+      const raw = localStorage.getItem(SERIES_DIFF_KEY);
+      if (raw) seriesDiffMap = JSON.parse(raw);
+    } catch(e) { seriesDiffMap = {}; }
+  }
+  function saveSeriesDiffMap() {
+    try { localStorage.setItem(SERIES_DIFF_KEY, JSON.stringify(seriesDiffMap)); } catch(e) {}
+  }
+  function getSeriesDiff(seriesName) {
+    return seriesDiffMap[seriesName] || 'standard';
+  }
+  function setSeriesDiff(seriesName, diff) {
+    seriesDiffMap[seriesName] = diff;
+    saveSeriesDiffMap();
+  }
+  loadSeriesDiffMap();
+
   function applyDifficultyUI() {
     document.querySelectorAll('.diff-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.diff === activeDifficulty);
@@ -3353,13 +3385,20 @@
     const all = window.CHARACTERS || [];
     if (!all.some(c => c.series)) { bar.style.display = 'none'; return; }
 
-    // Count only chars visible under the current difficulty
+    // Count chars visible under difficulty + series-difficulty rules
     const diffPool = activeDifficulty === 'hardcore'
       ? all
-      : all.filter(c => !c.difficulty || c.difficulty === 'standard');
+      : all.filter(c => {
+          if (getSeriesDiff(c.series) === 'hardcore') return false;
+          return !c.difficulty || c.difficulty === 'standard';
+        });
 
     const countMap = {};
     diffPool.forEach(c => { if (c.series) countMap[c.series] = (countMap[c.series] || 0) + 1; });
+    // Always include all series in the list (HC series always shown, just styled differently)
+    all.forEach(c => {
+      if (c.series && !(c.series in countMap)) countMap[c.series] = 0;
+    });
     const series = Object.entries(countMap).sort((a, b) => b[1] - a[1]).map(([s]) => s);
     bar.style.display = '';
     const totalCount = diffPool.length;
@@ -3397,12 +3436,25 @@
     }
 
     [{ label: 'All', key: null }, ...series.map(s => ({ label: s, key: s }))].forEach(({label, key}) => {
-      const count = key ? diffPool.filter(c => c.series === key).length : totalCount;
+      const isHardcoreSeries = key && getSeriesDiff(key) === 'hardcore';
+
+      // Count visible chars for this series pill
+      const count = key
+        ? (() => {
+            const seriesChars = all.filter(c => c.series === key);
+            if (activeDifficulty === 'hardcore') return seriesChars.length;
+            return seriesChars.filter(c => !c.difficulty || c.difficulty === 'standard').length;
+          })()
+        : totalCount;
+
       const pill = document.createElement('button');
       const isActive = key ? activeSeriesSet.has(key) : activeSeriesSet.size === 0;
-      pill.className = 'series-pill' + (isActive ? ' active' : '');
+      pill.className = 'series-pill' + (isActive ? ' active' : '') + (isHardcoreSeries ? ' hc-series' : '');
       pill.dataset.key = key || '';
       pill.textContent = label + ' (' + count + ')';
+      if (isHardcoreSeries) {
+        pill.title = 'Hardcore series — excluded from Standard All mode';
+      }
       pill.addEventListener('click', () => {
         if (key === null) {
           activeSeriesSet.clear();
@@ -3432,12 +3484,30 @@
 
   function filteredChars() {
     const all = window.CHARACTERS || [];
-    // Hardcore = all chars; Standard = only standard (no difficulty field also counts as standard)
-    const byDiff = activeDifficulty === 'hardcore'
-      ? all
-      : all.filter(c => !c.difficulty || c.difficulty === 'standard');
-    if (!activeSeriesSet.size) return byDiff;
-    return byDiff.filter(c => activeSeriesSet.has(c.series));
+
+    // Hardcore mode: all chars, all series
+    if (activeDifficulty === 'hardcore') {
+      if (!activeSeriesSet.size) return all;
+      return all.filter(c => activeSeriesSet.has(c.series));
+    }
+
+    // Standard mode — need to consider series difficulty
+    if (!activeSeriesSet.size) {
+      // "All" selected: exclude hardcore series entirely, then filter by char difficulty
+      return all.filter(c => {
+        const sDiff = getSeriesDiff(c.series);
+        if (sDiff === 'hardcore') return false; // whole series hidden in standard All
+        return !c.difficulty || c.difficulty === 'standard';
+      });
+    }
+
+    // Specific series selected in standard mode:
+    // - Standard series: show only standard-difficulty chars
+    // - Hardcore series: show only standard-difficulty chars (hardcore chars within a HC series are still hidden unless global HC mode)
+    return all.filter(c => {
+      if (!activeSeriesSet.has(c.series)) return false;
+      return !c.difficulty || c.difficulty === 'standard';
+    });
   }
 
   // ═══════════════════════════════════════════════════
@@ -6142,19 +6212,74 @@
     empty.style.display = 'none';
     list.innerHTML = '';
 
+    // Add explanation header
+    const note = document.createElement('div');
+    note.style.cssText = 'font-size:0.75rem;color:var(--muted);line-height:1.6;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:10px;';
+    note.innerHTML = '<strong style="color:var(--text)">Series Difficulty:</strong> Hardcore series are hidden from the pill bar in Standard mode. Select a specific hardcore series pill to play its characters. Character difficulty still applies within the series.';
+    list.appendChild(note);
+
     seriesList.forEach(([sName]) => {
         const cCount = (window.CHARACTERS||[]).filter(c=>c.series===sName).length;
         const oCount = (window.OPEDS||[]).filter(o=>o.title===sName).length;
+        const sDiff = getSeriesDiff(sName);
 
         const item = document.createElement('div');
         item.className = 'series-lib-item';
 
         const info = document.createElement('div');
         info.className = 'series-lib-info';
-        info.innerHTML = `<div class="series-lib-name">${esc(sName)}</div><div class="series-lib-stats">${cCount} chars · ${oCount} OP/EDs</div>`;
+        const diffBadge = sDiff === 'hardcore'
+          ? '<span style="margin-left:6px;font-size:0.68rem;font-weight:700;color:#f25f4c;background:rgba(242,95,76,0.12);border:1px solid rgba(242,95,76,0.3);border-radius:100px;padding:1px 7px;">💀 HARDCORE</span>'
+          : '';
+        info.innerHTML = `<div class="series-lib-name">${esc(sName)}${diffBadge}</div><div class="series-lib-stats">${cCount} chars · ${oCount} OP/EDs</div>`;
 
         const actions = document.createElement('div');
         actions.className = 'series-lib-actions';
+        actions.style.cssText = 'display:flex;flex-direction:column;gap:6px;align-items:flex-end;';
+
+        // Series difficulty toggle
+        const diffRow = document.createElement('div');
+        diffRow.style.cssText = 'display:flex;gap:4px;';
+
+        const stdBtn = document.createElement('button');
+        stdBtn.style.cssText = `padding:4px 9px;border-radius:7px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;border:1.5px solid ${sDiff === 'standard' ? '#4ade80' : 'var(--border)'};background:${sDiff === 'standard' ? 'rgba(74,222,128,0.12)' : 'transparent'};color:${sDiff === 'standard' ? '#4ade80' : 'var(--muted)'}`;
+        stdBtn.textContent = '⚡ Std';
+        stdBtn.title = 'Standard — visible in normal mode';
+
+        const hcBtn = document.createElement('button');
+        hcBtn.style.cssText = `padding:4px 9px;border-radius:7px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;border:1.5px solid ${sDiff === 'hardcore' ? '#f25f4c' : 'var(--border)'};background:${sDiff === 'hardcore' ? 'rgba(242,95,76,0.12)' : 'transparent'};color:${sDiff === 'hardcore' ? '#f25f4c' : 'var(--muted)'}`;
+        hcBtn.textContent = '💀 HC';
+        hcBtn.title = 'Hardcore — hidden unless specifically selected';
+
+        function refreshDiffBtns(d) {
+          stdBtn.style.borderColor = d === 'standard' ? '#4ade80' : 'var(--border)';
+          stdBtn.style.background  = d === 'standard' ? 'rgba(74,222,128,0.12)' : 'transparent';
+          stdBtn.style.color       = d === 'standard' ? '#4ade80' : 'var(--muted)';
+          hcBtn.style.borderColor  = d === 'hardcore' ? '#f25f4c' : 'var(--border)';
+          hcBtn.style.background   = d === 'hardcore' ? 'rgba(242,95,76,0.12)' : 'transparent';
+          hcBtn.style.color        = d === 'hardcore' ? '#f25f4c' : 'var(--muted)';
+          // Update badge in info
+          const badge = info.querySelector('span');
+          if (d === 'hardcore') {
+            if (!badge) info.querySelector('.series-lib-name').insertAdjacentHTML('beforeend', '<span style="margin-left:6px;font-size:0.68rem;font-weight:700;color:#f25f4c;background:rgba(242,95,76,0.12);border:1px solid rgba(242,95,76,0.3);border-radius:100px;padding:1px 7px;">💀 HARDCORE</span>');
+          } else {
+            if (badge) badge.remove();
+          }
+        }
+
+        stdBtn.addEventListener('click', () => {
+          setSeriesDiff(sName, 'standard');
+          refreshDiffBtns('standard');
+          buildSeriesFilter();
+        });
+        hcBtn.addEventListener('click', () => {
+          setSeriesDiff(sName, 'hardcore');
+          refreshDiffBtns('hardcore');
+          buildSeriesFilter();
+        });
+
+        diffRow.appendChild(stdBtn);
+        diffRow.appendChild(hcBtn);
 
         const renBtn = document.createElement('button');
         renBtn.className = 'series-lib-rename';
@@ -6175,6 +6300,13 @@
             }
             if (oUpdated) saveOpeds();
 
+            // Migrate series difficulty key
+            if (seriesDiffMap[sName] !== undefined) {
+              seriesDiffMap[n] = seriesDiffMap[sName];
+              delete seriesDiffMap[sName];
+              saveSeriesDiffMap();
+            }
+
             if (cUpdated || oUpdated) {
                 buildSeriesFilter();
                 renderEditList(document.getElementById('edit-search').value);
@@ -6184,6 +6316,7 @@
             }
         };
 
+        actions.appendChild(diffRow);
         actions.appendChild(renBtn);
         item.appendChild(info);
         item.appendChild(actions);
