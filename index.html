@@ -39,6 +39,9 @@
       flex-direction: column;
       align-items: center;
       background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255,137,6,0.07) 0%, transparent 60%);
+      /* Prevent layout jumps when mobile keyboard dismisses */
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: none;
     }
 
     /* ── Header ─────────────────────────────────────────────── */
@@ -5497,7 +5500,7 @@
              hintReveal.innerHTML = '💡 Series: <strong>' + esc(series) + '</strong>';
              hintReveal.classList.add('show');
           }
-          gInput.focus();
+          if (!('ontouchstart' in window)) gInput.focus();
         } else {
           // Game was already finished
           charImg.src = getCharImage(currentChar);
@@ -5918,7 +5921,8 @@
 
     clearGameUI();
     applyImageLoad();
-    gInput.focus();
+    // Only auto-focus on non-touch devices to avoid unwanted keyboard pop-up on mobile
+    if (!('ontouchstart' in window)) gInput.focus();
   }
 
   function applyImageLoad() {
@@ -5962,10 +5966,9 @@
       return;
     }
     applyImageLoad();
-    gInput.focus();
-  }
-
-  function showDailyComplete(result) {
+    // Only auto-focus on non-touch devices
+    if (!('ontouchstart' in window)) gInput.focus();
+  }(result) {
     const dotsRow = document.getElementById('daily-dots-row');
     dotsRow.innerHTML='';
     const maxG = result.maxGuesses || 5;
@@ -6218,8 +6221,15 @@
     else if(e.key==='Escape') closeAC();
   });
   acList.addEventListener('mousedown',e=>{ const it=e.target.closest('.ac-item'); if(it){e.preventDefault();submitGuess(it.dataset.name);} });
+  // Fix: touchstart on mobile so tapping an AC item works before blur fires
+  acList.addEventListener('touchstart',e=>{ const it=e.target.closest('.ac-item'); if(it){e.preventDefault();submitGuess(it.dataset.name);} }, { passive: false });
   document.addEventListener('click',e=>{ if(!e.target.closest('.input-wrap')) closeAC(); });
-  document.addEventListener('scroll', () => closeAC(), true); // close AC on any scroll
+  // Fix: only close AC when the page itself scrolls (keyboard dismiss / user scrolling away),
+  // but NOT when the user is scrolling inside the autocomplete list itself.
+  document.addEventListener('scroll', (e) => {
+    if (acList.contains(e.target) || e.target === acList) return;
+    closeAC();
+  }, { passive: true, capture: true });
   function closeAC(){ acList.classList.remove('open'); acList.innerHTML=''; acIndex=-1; }
 
   skipBtn.addEventListener('click',()=>{ if(gameState!=='playing'||dailyMode) return; recordGame(false, 0); streak=0; setStreak(0); loadNext(); });
@@ -6561,7 +6571,7 @@
       qi.value = ''; qi.disabled = false;
       qi.classList.remove('shake','flash-correct');
       closeQuizAC();
-      qi.focus();
+      if (!('ontouchstart' in window)) qi.focus();
     }
   }
 
@@ -6647,6 +6657,7 @@
     else if (e.key==='Escape') closeQuizAC();
   });
   quizAcList.addEventListener('mousedown', e => { const it=e.target.closest('.ac-item'); if(it){e.preventDefault();submitQuizGuess(it.dataset.name);} });
+  quizAcList.addEventListener('touchstart', e => { const it=e.target.closest('.ac-item'); if(it){e.preventDefault();submitQuizGuess(it.dataset.name);} }, { passive: false });
   document.addEventListener('click', e => { if(!e.target.closest('#quiz-input-wrap')) closeQuizAC(); });
   function closeQuizAC() { quizAcList.classList.remove('open'); quizAcList.innerHTML=''; quizAcIndex=-1; }
 
