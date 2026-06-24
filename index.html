@@ -4023,9 +4023,10 @@
 
       <div style="display:flex; justify-content:center; gap:8px;">
         <div style="display:flex; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:4px; gap:4px;">
-          <button type="button" class="oped-type-btn active" data-type="both" style="padding:6px 12px; background:var(--surface2); border:1.5px solid var(--accent); border-radius:9px; color:var(--accent); font-family:Outfit,sans-serif; font-size:0.75rem; font-weight:600; cursor:pointer;">Both</button>
+          <button type="button" class="oped-type-btn active" data-type="both" style="padding:6px 12px; background:var(--surface2); border:1.5px solid var(--accent); border-radius:9px; color:var(--accent); font-family:Outfit,sans-serif; font-size:0.75rem; font-weight:600; cursor:pointer;">OP+ED</button>
           <button type="button" class="oped-type-btn" data-type="OP" style="padding:6px 12px; background:transparent; border:1.5px solid var(--border); border-radius:9px; color:var(--text); font-family:Outfit,sans-serif; font-size:0.75rem; font-weight:600; cursor:pointer;">OP</button>
           <button type="button" class="oped-type-btn" data-type="ED" style="padding:6px 12px; background:transparent; border:1.5px solid var(--border); border-radius:9px; color:var(--text); font-family:Outfit,sans-serif; font-size:0.75rem; font-weight:600; cursor:pointer;">ED</button>
+          <button type="button" class="oped-type-btn" data-type="Theme" style="padding:6px 12px; background:transparent; border:1.5px solid var(--border); border-radius:9px; color:var(--text); font-family:Outfit,sans-serif; font-size:0.75rem; font-weight:600; cursor:pointer;">🎼 Theme</button>
         </div>
         <div style="display:flex; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; padding:4px; gap:4px;">
           <button type="button" id="oped-mode-anime" class="odur-btn active" style="font-size:0.7rem; padding:6px 12px;">Guess Anime</button>
@@ -4563,6 +4564,7 @@
             <select class="mod-input" id="oped-mod-type" style="cursor:pointer">
               <option value="OP">OP (Opening)</option>
               <option value="ED">ED (Ending)</option>
+              <option value="Theme">Theme (Character / Game / Show)</option>
             </select>
           </div>
         </div>
@@ -5129,7 +5131,14 @@
     });
     const series = Object.entries(countMap).sort((a, b) => b[1] - a[1]).map(([s]) => s);
     bar.style.display = '';
-    const totalCount = genderedPool.length;
+    // Fix: "All" pill should show total ignoring series filter (only gender + difficulty)
+    const allModePool = activeDifficulty === 'hardcore'
+      ? applyGenderFilter(all)
+      : applyGenderFilter(all.filter(c => {
+          if (getSeriesDiff(c.series) === 'hardcore') return false;
+          return !c.difficulty || c.difficulty === 'standard';
+        }));
+    const totalCount = allModePool.length;
     const fragment = document.createDocumentFragment();
 
     const searchWrap = document.getElementById('series-search-wrap');
@@ -10757,7 +10766,10 @@ self.addEventListener('fetch', e => {
 
   function getFilteredOpedPool() {
     let pool = [...(window.OPEDS || [])];
-    if (opedTypeFilter !== 'both') {
+    if (opedTypeFilter === 'both') {
+      // "OP+ED" = OP + ED only (excludes Theme)
+      pool = pool.filter(o => o.type === 'OP' || o.type === 'ED' || !o.type);
+    } else {
       pool = pool.filter(o => o.type === opedTypeFilter);
     }
     if (opedSeriesFilter) {
