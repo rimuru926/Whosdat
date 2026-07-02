@@ -3921,39 +3921,41 @@
       <div class="wishlist-type-toggle">
         <button type="button" class="wishlist-type-btn active" data-type="character">🖼️ Character</button>
         <button type="button" class="wishlist-type-btn" data-type="quote">💬 Quote</button>
+        <button type="button" class="wishlist-type-btn" data-type="item">📦 Other</button>
       </div>
 
-      <!-- Item Form (hidden - removed from UI) -->
+      <!-- General/Other Request Form — for anything that isn't a character or quote:
+           theme songs, game modes, features, powers, bug reports, etc. -->
       <div id="item-form" class="wishlist-form-content wishlist-form-hidden">
         <div class="wishlist-form-group">
-          <label class="wishlist-form-label">Name</label>
-          <input type="text" class="wishlist-form-input" id="item-name" placeholder="e.g., New Power, Feature Request">
+          <label class="wishlist-form-label">Title</label>
+          <input type="text" class="wishlist-form-input" id="item-name" placeholder="e.g., Add Naruto OP4, Dark Mode toggle, Duel Mode">
         </div>
         <div class="wishlist-form-row">
           <div class="wishlist-form-group">
-            <label class="wishlist-form-label">Rank</label>
+            <label class="wishlist-form-label">Priority</label>
             <select class="wishlist-form-select" id="item-rank">
-              <option value="S">S Rank</option>
-              <option value="A">A Rank</option>
-              <option value="B">B Rank</option>
-              <option value="C">C Rank</option>
-              <option value="D">D Rank</option>
-              <option value="E">E Rank</option>
-              <option value="F">F Rank</option>
+              <option value="S">🔥 Must Have</option>
+              <option value="A">⭐ High</option>
+              <option value="B">👍 Medium</option>
+              <option value="C">💭 Low</option>
             </select>
           </div>
           <div class="wishlist-form-group">
-            <label class="wishlist-form-label">Type</label>
+            <label class="wishlist-form-label">Category</label>
             <select class="wishlist-form-select" id="item-type">
-              <option value="item">Item</option>
-              <option value="power">Power</option>
-              <option value="feature">Feature</option>
+              <option value="theme">🎵 Theme Song / OP-ED</option>
+              <option value="feature">✨ Feature</option>
+              <option value="gamemode">🎮 Game Mode</option>
+              <option value="power">💥 Power / Ability</option>
+              <option value="bug">🐛 Bug Report</option>
+              <option value="other">📦 Other</option>
             </select>
           </div>
         </div>
         <div class="wishlist-form-group">
           <label class="wishlist-form-label">Description</label>
-          <textarea class="wishlist-form-textarea" id="item-desc" placeholder="Describe your request..."></textarea>
+          <textarea class="wishlist-form-textarea" id="item-desc" placeholder="Describe your request in detail... (e.g. series name, link, why you want it)"></textarea>
         </div>
       </div>
 
@@ -5764,10 +5766,14 @@
           <div class="wishlist-quote-text">${esc(item.quote||'')}</div>
           <div class="wishlist-quote-author">— ${esc(item.author||'Unknown')}</div>`;
       } else {
+        const PRIORITY_LABELS = { S: '🔥 Must Have', A: '⭐ High', B: '👍 Medium', C: '💭 Low' };
+        const CATEGORY_LABELS = { theme: '🎵 Theme Song', feature: '✨ Feature', gamemode: '🎮 Game Mode', power: '💥 Power', bug: '🐛 Bug', other: '📦 Other', item: '📦 Other' };
+        const prio = PRIORITY_LABELS[item.rank] || item.rank || '';
+        const cat  = CATEGORY_LABELS[item.itemType] || item.itemType || item.type || 'Other';
         inner = `
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <span class="wishlist-card-rank">${esc(item.rank||'S')}</span>
-            <span class="wishlist-card-type">${esc(item.itemType||item.type||'item')}</span>
+            <span class="wishlist-card-rank">${esc(prio)}</span>
+            <span class="wishlist-card-type">${esc(cat)}</span>
           </div>
           <div class="wishlist-card-name">${esc(item.name||'')}</div>
           <div class="wishlist-card-desc">${esc(item.desc||'')}</div>`;
